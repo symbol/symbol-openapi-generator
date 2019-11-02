@@ -1,11 +1,9 @@
-# nem2-open-api-generator
+# [nem2-open-api-generator](https://github.com/NEMStudios/nem2-open-api-generator)
 Project in charge of generating the nem2-sdk clients using openapi cli, gradle and npm.
 
 The generate script will create and install different flavours of java and javascript rest clients according to the current NEM Open API specification.
 
-The official NEM Api descriptor can be found here:
-
-https://github.com/nemtech/nem2-docs/blob/master/source/resources/collections/openapi3.yaml
+The official NEM Api descriptor can be found [here](https://github.com/nemtech/nem2-docs/blob/master/source/resources/collections/openapi3.yaml):
 
 # Requirements
 
