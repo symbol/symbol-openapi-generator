@@ -46,7 +46,7 @@ def signingKeyId = getPropertyValue('signingKeyId')
 def signingPassword = getPropertyValue('signingPassword')
 
 def githubToken = getPropertyValue('GRGIT_USER')
-def repoPath = getPropertyValue('TRAVIS_REPO_SLUG', 'NEMStudios/nem2-open-api-java-generator')
+def repoPath = getPropertyValue('TRAVIS_REPO_SLUG', 'NEMStudios/nem2-open-api-generator')
 
 allprojects {
     ext."signing.keyId" = signingKeyId

@@ -88,7 +88,7 @@ generateJavascript() {
     -Dlog.level=error \
     --additional-properties="npmName=$ARTIFACT_ID" \
     --additional-properties="gitUserId=NEMStudios" \
-    --additional-properties="gitRepoId=nem2-open-api-java-generator" \
+    --additional-properties="gitRepoId=nem2-open-api-generator" \
     --additional-properties="npmVersion=$VERSION" \
     --additional-properties="snapshot=$SNAPSHOT" \
     --type-mappings=x-number-string=string
