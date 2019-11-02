@@ -126,7 +126,8 @@ generateJavascript() {
     --additional-properties="npmVersion=$VERSION" \
     --additional-properties="snapshot=$SNAPSHOT" \
     --type-mappings=x-number-string=string
-  cp "$LIBRARY-templates/.npmignore" "$BUILD_DIR/$ARTIFACT_ID/.npmignore"
+  cp "$LIBRARY-templates/.npmignore" "$BUILD_DIR/$ARTIFACT_ID"
+  cp "$LIBRARY-templates/README.md" "$BUILD_DIR/$ARTIFACT_ID"
   sh -c "cd $BUILD_DIR/$ARTIFACT_ID && npm install"
   sh -c "cd $BUILD_DIR/$ARTIFACT_ID && npm run-script build"
   if [[ $OPERATION == "publish" || $OPERATION == "release" ]]; then
