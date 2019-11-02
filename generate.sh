@@ -36,6 +36,11 @@ case "$FULL_VERSION" in
 *) echo SNAPSHOT=false ;;
 esac
 
+TRAVIS_REPO_SLUG="${TRAVIS_REPO_SLUG:-NEMStudios/nem2-open-api-generator}"
+
+GIT_USER_ID="$(cut -d'/' -f1 <<<"$TRAVIS_REPO_SLUG")"
+GIT_REPO_ID="$(cut -d'/' -f2 <<<"$TRAVIS_REPO_SLUG")"
+
 BUILD_DIR="./build"
 
 echo "Operation: $OPERATION_ARG"
@@ -55,6 +60,9 @@ echo "Operation: $OPERATION_ARG"
 echo "Full Version: $FULL_VERSION"
 echo "Version: $VERSION"
 echo "Snapshot: $SNAPSHOT"
+echo "Travis Repo Slug: $TRAVIS_REPO_SLUG"
+echo "Git User ID: $GIT_USER_ID"
+echo "Git Repo ID: $GIT_REPO_ID"
 echo "Open Api generator version: $(openapi-generator version)"
 
 
@@ -110,11 +118,11 @@ generateJavascript() {
     -o "$BUILD_DIR/$ARTIFACT_ID" \
     -t "$LIBRARY-templates/" \
     -i openapi3-any-of-patch.yaml \
-    --git-user-id "NEMStudios" \
-    --git-repo-id "nem2-open-api-generator" \
+    --git-user-id "$GIT_USER_ID" \
+    --git-repo-id "$GIT_REPO_ID" \
     --additional-properties="npmName=$ARTIFACT_ID" \
-    --additional-properties=gitUserId=NEMStudios \
-    --additional-properties=gitRepoId=nem2-open-api-generator \
+    --additional-properties=gitUserId=$GIT_USER_ID \
+    --additional-properties=gitRepoId=$GIT_REPO_ID \
     --additional-properties="npmVersion=$VERSION" \
     --additional-properties="snapshot=$SNAPSHOT" \
     --type-mappings=x-number-string=string
