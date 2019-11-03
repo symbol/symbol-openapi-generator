@@ -14,8 +14,18 @@ env:
   - GEN_LIBRARY=typescript-node
   - GEN_LIBRARY=java
 install: npm install @openapitools/openapi-generator-cli@cli-4.1.0 -g
-script:  bash generate.sh $GEN_LIBRARY $TRAVIS_BRANCH
+script:  bash generate.sh $GEN_LIBRARY build
 deploy:
+  - provider: script
+    skip_cleanup: true
+    script: bash generate.sh $GEN_LIBRARY publish
+    on:
+      branch: master
+  - provider: script
+    skip_cleanup: true
+    script: bash generate.sh $GEN_LIBRARY release
+    on:
+      branch: release
   - provider: script
     skip_cleanup: true
     script: bash post-release.sh
