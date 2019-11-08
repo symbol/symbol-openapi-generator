@@ -1,0 +1,8 @@
+Amount
+BlockDuration
+Difficulty
+Height
+Importance
+Score
+Timestamp
+RestrictionValue

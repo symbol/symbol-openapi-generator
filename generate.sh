@@ -21,7 +21,7 @@ OPERATION_ARG="$2"
 
 arg1Values=['all','java','jersey2','vertx','okhttp-gson','typescript-node']
 
-if [[ " ${arg1Values[*]} " != *"$LIBRARY_ARG"*  || "" == "$LIBRARY_ARG" ]]; then
+if [[ " ${arg1Values[*]} " != *"$LIBRARY_ARG"* || "" == "$LIBRARY_ARG" ]]; then
   echo "Usage: $(basename $0) [library] [operation]"
   echo "Invalid library argument '$LIBRARY_ARG'. Possible values are ${arg1Values[*]} "
   exit 1
@@ -40,7 +40,7 @@ TRAVIS_REPO_SLUG="${TRAVIS_REPO_SLUG:-NEMStudios/nem2-open-api-generator}"
 
 GIT_USER_ID="$(cut -d'/' -f1 <<<"$TRAVIS_REPO_SLUG")"
 GIT_REPO_ID="$(cut -d'/' -f2 <<<"$TRAVIS_REPO_SLUG")"
-
+INPUT="openapi3-any-of-patch.yml"
 BUILD_DIR="./build"
 
 echo "Operation: $OPERATION_ARG"
@@ -64,7 +64,6 @@ echo "Travis Repo Slug: $TRAVIS_REPO_SLUG"
 echo "Git User ID: $GIT_USER_ID"
 echo "Git Repo ID: $GIT_REPO_ID"
 echo "Open Api generator version: $(openapi-generator version)"
-
 
 export JAVA_OPTS="-Dlog.level=error"
 
@@ -95,7 +94,7 @@ generateJava() {
   rm -rf "$BUILD_DIR/$ARTIFACT_ID"
   openapi-generator generate -g java \
     -o "$BUILD_DIR/$ARTIFACT_ID" \
-    -i openapi3-any-of-patch.yaml \
+    -i "$INPUT" \
     --additional-properties="apiPackage=io.nem.sdk.openapi.$LIBRARY.api" \
     --additional-properties="invokerPackage=io.nem.sdk.openapi.$LIBRARY.invoker" \
     --additional-properties="modelPackage=io.nem.sdk.openapi.$LIBRARY.model" \
@@ -117,7 +116,7 @@ generateJavascript() {
   openapi-generator generate -g "$LIBRARY" \
     -o "$BUILD_DIR/$ARTIFACT_ID" \
     -t "$LIBRARY-templates/" \
-    -i openapi3-any-of-patch.yaml \
+    -i "$INPUT" \
     --git-user-id "$GIT_USER_ID" \
     --git-repo-id "$GIT_REPO_ID" \
     --additional-properties="npmName=$ARTIFACT_ID" \
