@@ -7,7 +7,6 @@ info:
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 tags:
   - name: Account routes
-  - name: Aggregate routes
   - name: Block routes
   - name: Chain routes
   - name: Diagnostic routes
@@ -497,7 +496,7 @@ paths:
   /transaction/partial:
     put:
       tags:
-        - Aggregate routes
+        - Transaction routes
       summary: Announce an aggregate bonded transaction
       description: Announces an aggregate bonded transaction to the network.
       operationId: announcePartialTransaction
@@ -517,7 +516,7 @@ paths:
   /transaction/cosignature:
     put:
       tags:
-        - Aggregate routes
+        - Transaction routes
       summary: Announce a cosignature transaction
       description: Announces a cosignature transaction to the network.
       operationId: announceCosignatureTransaction
@@ -1710,15 +1709,6 @@ components:
       properties:
         signature:
           $ref: '#/components/schemas/Signature'
-    NetworkTypeNameEnum:
-      type: string
-      example: mijinTest
-      enum:
-        - mijin
-        - mijinTest
-        - public
-        - publicTest
-      description: Network name.
     NetworkTypeDTO:
       type: object
       required:
@@ -1726,7 +1716,9 @@ components:
         - description
       properties:
         name:
-          $ref: '#/components/schemas/NetworkTypeNameEnum'
+          type: string
+          description: Network name.
+          example: mijinTest
         description:
           type: string
           description: A short text describing the network.
@@ -1752,16 +1744,23 @@ components:
     NodeInfoDTO:
       type: object
       required:
+        - version
         - publicKey
+        - roles
         - port
         - networkIdentifier
-        - version
-        - roles
-        - host
         - friendlyName
+        - host
       properties:
+        version:
+          type: integer
+          description: Version of the application.
+          format: int32
+          example: 0
         publicKey:
           $ref: '#/components/schemas/PublicKey'
+        roles:
+          $ref: '#/components/schemas/RolesTypeEnum'
         port:
           type: integer
           description: Port used for the communication.
@@ -1771,21 +1770,14 @@ components:
           type: integer
           format: int32
           example: 144
-        version:
-          type: integer
-          description: Version of the application.
-          format: int32
-          example: 0
-        roles:
-          $ref: '#/components/schemas/RolesTypeEnum'
-        host:
-          type: string
-          description: Node IP address.
-          example: 127.0.0.1
         friendlyName:
           type: string
           description: Node friendly name.
           example: api-node-0
+        host:
+          type: string
+          description: Node IP address.
+          example: 127.0.0.1
     NodeTimeDTO:
       type: object
       required:
@@ -3038,11 +3030,11 @@ components:
     AccountAddressRestrictionTransactionBodyDTO:
       type: object
       required:
-        - restrictionType
+        - restrictionFlags
         - restrictionAdditions
         - restrictionDeletions
       properties:
-        restrictionType:
+        restrictionFlags:
           $ref: '#/components/schemas/AccountRestrictionFlagsEnum'
         restrictionAdditions:
           type: array
@@ -3063,11 +3055,11 @@ components:
     AccountMosaicRestrictionTransactionBodyDTO:
       type: object
       required:
-        - restrictionType
+        - restrictionFlags
         - restrictionAdditions
         - restrictionDeletions
       properties:
-        restrictionType:
+        restrictionFlags:
           $ref: '#/components/schemas/AccountRestrictionFlagsEnum'
         restrictionAdditions:
           type: array
@@ -3088,11 +3080,11 @@ components:
     AccountOperationRestrictionTransactionBodyDTO:
       type: object
       required:
-        - restrictionType
+        - restrictionFlags
         - restrictionAdditions
         - restrictionDeletions
       properties:
-        restrictionType:
+        restrictionFlags:
           $ref: '#/components/schemas/AccountRestrictionFlagsEnum'
         restrictionAdditions:
           type: array
@@ -3132,10 +3124,10 @@ components:
     AccountRestrictionDTO:
       type: object
       required:
-        - restrictionType
+        - restrictionFlags
         - values
       properties:
-        restrictionType:
+        restrictionFlags:
           $ref: '#/components/schemas/AccountRestrictionFlagsEnum'
         values:
           type: array
