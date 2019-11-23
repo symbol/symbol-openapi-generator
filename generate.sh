@@ -77,8 +77,8 @@ buildJava() {
     ./gradlew publish
   fi
   if [[ $OPERATION == "release" ]]; then
-    echo "./gradlew closeRepository"
-    ./gradlew closeRepository
+    echo "./gradlew closeAndReleaseRepository"
+    ./gradlew closeAndReleaseRepository
   fi
   if [[ $OPERATION == "publish" || $OPERATION == "release" ]]; then
     echo "./gradlew gitPublishPush"
