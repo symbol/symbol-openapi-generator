@@ -1283,7 +1283,7 @@ components:
       schema:
         type: string
     transactionType:
-      name: transactionType
+      name: type
       in: query
       description: Transaction type to filter by.
       schema:
