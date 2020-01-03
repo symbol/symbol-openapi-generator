@@ -5,7 +5,7 @@ if [ "$1" == "-h" ]; then
   echo "Usage: $(basename $0) [library] [operation]"
   echo "[library] is required: Possible values: "
   echo "   * all: it generates all java and javascripts options"
-  echo "   * java: it generates javascripts options"
+  echo "   * java: it generates all the java options"
   echo "   * jersey2: it generates jersey2 java version"
   echo "   * vertx: it generates vertx java version"
   echo "   * okhttp-gson: it generates okhttp-gson java version"
