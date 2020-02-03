@@ -119,6 +119,7 @@ generateJavascript() {
     -i "$INPUT" \
     --git-user-id "$GIT_USER_ID" \
     --git-repo-id "$GIT_REPO_ID" \
+    --additional-properties="supportsES6=true" \
     --additional-properties="npmName=$ARTIFACT_ID" \
     --additional-properties=gitUserId=$GIT_USER_ID \
     --additional-properties=gitRepoId=$GIT_REPO_ID \

@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: 0.7.20.6
+  version: 0.7.20.7
   title: Catapult REST Endpoints
   license:
     name: Apache 2.0
@@ -1799,6 +1799,7 @@ components:
         - confirmed
         - unconfirmed
         - failed
+        - partial
       description: State of the transaction.
     TransactionStatusTypeEnum:
       type: string
