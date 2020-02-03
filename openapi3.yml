@@ -1,7 +1,8 @@
 openapi: 3.0.0
 info:
-  version: 0.7.20.7
+  version: 0.7.22
   title: Catapult REST Endpoints
+  description: OpenAPI Specification of catapult-rest 1.0.20.8
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -1737,10 +1738,12 @@ components:
       enum:
         - 1
         - 2
+        - 3
       description: |
         Role of the node:
         * 1 - Peer node.
         * 2 - Api node.
+        * 3 - Dual node.
       example: 2
     CommunicationTimestampsDTO:
       type: object

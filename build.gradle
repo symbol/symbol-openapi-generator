@@ -137,6 +137,8 @@ subprojects {
                     password = ossrhPassword
                 }
             }
+            connectTimeout = Duration.ofSeconds(180)
+            clientTimeout = Duration.ofSeconds(180)
         }
     }
 
@@ -170,6 +172,8 @@ nexusStaging {
     stagingProfileId = "365f7aa90b3b13"
     username = ossrhUsername
     password = ossrhPassword
+    numberOfRetries = 40
+    delayBetweenRetriesInMillis = 3000
 }
 
 release.dependsOn subprojects.install
