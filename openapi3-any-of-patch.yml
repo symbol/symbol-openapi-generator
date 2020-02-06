@@ -1,8 +1,8 @@
-openapi: 3.0.0
+openapi: 3.0.2
 info:
-  version: 0.7.22
+  version: 0.8.2
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.0.20.8
+  description: OpenAPI Specification of catapult-rest 1.0.20.10
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -10,7 +10,6 @@ tags:
   - name: Account routes
   - name: Block routes
   - name: Chain routes
-  - name: Diagnostic routes
   - name: Metadata routes
   - name: Mosaic routes
   - name: Multisig routes
@@ -322,34 +321,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChainScoreDTO'
-  /diagnostic/storage:
-    get:
-      tags:
-        - Diagnostic routes
-      summary: Get the storage information of the node
-      description: Returns diagnostic information about the node storage.
-      operationId: getDiagnosticStorage
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StorageInfoDTO'
-  /diagnostic/server:
-    get:
-      tags:
-        - Diagnostic routes
-      summary: Get the version of the running rest component
-      description: Returns the version of the running catapult-rest component.
-      operationId: getServerInfo
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServerInfoDTO'
   /network:
     get:
       tags:
@@ -364,6 +335,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NetworkTypeDTO'
+  /node/health:
+    get:
+      tags:
+        - Node routes
+      summary: Get the node health information
+      description: Supplies information regarding the connection and services status.
+      operationId: getNodeHealth
+      responses:
+        '200':
+          description: Both API node and database services are reachable from REST server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeHealthInfoDTO'
+        '503':
+          description: Either API node or database service is unavailable or unreachable from REST server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeHealthInfoDTO'
   /node/info:
     get:
       tags:
@@ -392,6 +383,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NodeTimeDTO'
+  /node/storage:
+    get:
+      tags:
+        - Node routes
+      summary: Get the storage information of the node
+      description: Returns storage information about the node.
+      operationId: getNodeStorage
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageInfoDTO'
+  /node/server:
+    get:
+      tags:
+        - Node routes
+      summary: Get the version of the running REST component
+      description: Returns the version of the running catapult-rest component.
+      operationId: getServerInfo
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInfoDTO'
   '/transaction/{transactionId}':
     get:
       tags:
@@ -1173,7 +1192,7 @@ components:
     accountId:
       name: accountId
       in: path
-      description: Account public key or address.
+      description: Account public key or address enconded using a 32-character set.
       required: true
       schema:
         type: string
@@ -1335,11 +1354,13 @@ components:
   schemas:
     Address:
       type: string
-      description: Decoded address.
+      format: hex
+      description: Address expressed in hexadecimal base.
       example: 9081FCCB41F8C8409A9B99E485E0E28D23BD6304EF7215E01A
     Amount:
-      type: x-number-string
+      type: string
       description: Absolute amount. An amount of 123456789 (absolute) for a mosaic with divisibility 6 means 123.456789 (relative).
+      example: 123456
     BlockDuration:
       type: x-number-string
       description: Duration expressed in number of blocks.
@@ -1351,10 +1372,11 @@ components:
       example: 0
     Difficulty:
       type: x-number-string
-      description: 'Defines how difficult it will be to harvest next the block, based on previous blocks.'
+      description: 'Determines how hard is to harvest a new block, based on previous blocks.'
       example: 100000000000000
     Hash256:
       type: string
+      format: hex
       example: C8FC3FB54FDDFBCE0E8C71224990124E4EEC5AD5D30E592EDFA9524669A23810
     Height:
       type: x-number-string
@@ -1367,8 +1389,12 @@ components:
     MetadataKey:
       type: string
       format: hex
-      description: 'Metadata key scoped to source, target and type.'
+      description: 'Metadata key scoped to source, target and type expressed.'
       example: 0DC67FBE1CAD29E3
+    MetadataValue:
+      type: string
+      format: hex
+      description: 'Metadata value. If embedded in a transaction, this is calculated as xor(previous-value, value).'
     ModelError:
       type: object
       required:
@@ -1394,7 +1420,7 @@ components:
           $ref: '#/components/schemas/MosaicId'
         amount:
           $ref: '#/components/schemas/Amount'
-    MosaicRestrictionKey:
+    RestrictionKey:
       type: string
       format: hex
       description: Restriction key.
@@ -1406,11 +1432,13 @@ components:
       example: 85BBEA6CC462B244
     PublicKey:
       type: string
+      format: hex
+      description: Public key.
       example: AC1A6E1D8DE5B17D2C6B1293F1CAD3829EEACF38D09311BB3C8E5A880092DE26
     Score:
       type: x-number-string
       description: |
-        Score of the blockchain.During synchronization, nodes try to get the
+        Score of the blockchain. During synchronization, nodes try to get the
         blockchain with highest score in the network.
       example: 1683298087010368300
     Signature:
@@ -1424,7 +1452,7 @@ components:
     UnresolvedAddress:
       type: string
       description: |
-        Address decoded. If the bit 0 of byte 0 is not set (like in 0x90), then it is a
+        Address expressed in hexadecimal base. If the bit 0 of byte 0 is not set (like in 0x90), then it is a
         regular address. Else (e.g. 0x91) it represents a namespace id which starts at byte 1.
       example: 9081FCCB41F8C8409A9B99E485E0E28D23BD6304EF7215E01A
     UnresolvedMosaicId:
@@ -1445,8 +1473,8 @@ components:
         amount:
           $ref: '#/components/schemas/Amount'
     RestrictionValue:
-      type: x-number-string
-      description: A value in a restriction transaction.
+      type: string
+      description: Restriction value.
       example: 1000
     AccountTypeEnum:
       type: integer
@@ -1493,9 +1521,7 @@ components:
             $ref: '#/components/schemas/ActivityBucketDTO'
         mosaics:
           type: array
-          description: |
-            Mosaic units owned. The amount is represented in absolute amount.
-            Thus a balance of 123456789 for a mosaic with divisibility 6 (absolute) means the account owns 123.456789.
+          description: Mosaic units owned.
           items:
             $ref: '#/components/schemas/Mosaic'
         importance:
@@ -1516,18 +1542,25 @@ components:
         - totalFeesPaid
         - beneficiaryCount
         - rawScore
+      description: |
+        Supplementary data stored for importance recalculation.
+        At each importance recalculation, existing buckets are shifted, the working bucket is finalized and a new working bucketis created.
+        Each bucket influences at most five importance recalculations.
       properties:
         startHeight:
           $ref: '#/components/schemas/Height'
         totalFeesPaid:
           type: integer
           format: int64
+          description: Fees paid by the account for this bucket.
         beneficiaryCount:
           type: integer
           format: int32
+          description: Number of times the account has been a beneficiary for this bucket.
         rawScore:
           type: integer
           format: int64
+          description: Importance score for this bucket. This is taken into account to calculate the latest account importance.
     BlockDTO:
       type: object
       allOf:
@@ -1634,49 +1667,6 @@ components:
       properties:
         height:
           $ref: '#/components/schemas/Height'
-    ServerDTO:
-      type: object
-      required:
-        - restVersion
-        - sdkVersion
-      properties:
-        restVersion:
-          type: string
-          example: 1.0.14
-          description: catapult-rest component version.
-        sdkVersion:
-          type: string
-          example: 0.7.14
-          description: catapult-sdk component version.
-    ServerInfoDTO:
-      type: object
-      required:
-        - serverInfo
-      properties:
-        serverInfo:
-          $ref: '#/components/schemas/ServerDTO'
-    StorageInfoDTO:
-      type: object
-      required:
-        - numBlocks
-        - numTransactions
-        - numAccounts
-      properties:
-        numBlocks:
-          type: integer
-          format: int64
-          description: Number of blocks stored.
-          example: 245053
-        numTransactions:
-          type: integer
-          format: int64
-          description: Number of transactions stored.
-          example: 58590
-        numAccounts:
-          type: integer
-          format: int64
-          description: Number of accounts created.
-          example: 177
     NetworkTypeEnum:
       type: integer
       format: int32
@@ -1732,6 +1722,11 @@ components:
           type: string
           description: A short text describing the network.
           example: catapult development network
+    NodeStatusEnum:
+      type: string
+      enum:
+        - up
+        - down
     RolesTypeEnum:
       type: integer
       format: int32
@@ -1752,6 +1747,25 @@ components:
           $ref: '#/components/schemas/Timestamp'
         receiveTimestamp:
           $ref: '#/components/schemas/Timestamp'
+    NodeHealthDTO:
+      type: object
+      required:
+        - apiNode
+        - db
+      properties:
+        apiNode:
+          $ref: '#/components/schemas/NodeStatusEnum'
+          description: API node service status.
+        db:
+          $ref: '#/components/schemas/NodeStatusEnum'
+          description: MongoDB service status.
+    NodeHealthInfoDTO:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/schemas/NodeHealthDTO'
     NodeInfoDTO:
       type: object
       required:
@@ -1796,6 +1810,49 @@ components:
       properties:
         communicationTimestamps:
           $ref: '#/components/schemas/CommunicationTimestampsDTO'
+    ServerDTO:
+      type: object
+      required:
+        - restVersion
+        - sdkVersion
+      properties:
+        restVersion:
+          type: string
+          example: 1.0.14
+          description: catapult-rest component version.
+        sdkVersion:
+          type: string
+          example: 0.7.14
+          description: catapult-sdk component version.
+    ServerInfoDTO:
+      type: object
+      required:
+        - serverInfo
+      properties:
+        serverInfo:
+          $ref: '#/components/schemas/ServerDTO'
+    StorageInfoDTO:
+      type: object
+      required:
+        - numBlocks
+        - numTransactions
+        - numAccounts
+      properties:
+        numBlocks:
+          type: integer
+          format: int64
+          description: Number of blocks stored.
+          example: 245053
+        numTransactions:
+          type: integer
+          format: int64
+          description: Number of transactions stored.
+          example: 58590
+        numAccounts:
+          type: integer
+          format: int64
+          description: Number of accounts created.
+          example: 177
     TransactionStateTypeEnum:
       type: string
       enum:
@@ -2193,11 +2250,14 @@ components:
           $ref: '#/components/schemas/Hash256'
         aggregateId:
           type: string
+          description: Identifier of the aggregate transaction.
         index:
           type: integer
           format: int32
+          description: Transaction index within the aggregate.
         id:
           type: string
+          description: Identifier of the transaction.
     TransactionBodyDTO:
       type: object
       required:
@@ -2242,8 +2302,10 @@ components:
         index:
           type: integer
           format: int32
+          description: Transaction index within the block.
         id:
           type: string
+          description: Identifier of the transaciton
     TransactionStatusDTO:
       type: object
       required:
@@ -2463,9 +2525,7 @@ components:
           format: int32
           description: Value size in bytes.
         value:
-          type: string
-          format: hex
-          description: 'When there is an existing value, the new value is calculated as xor(previous-value, value).'
+          $ref: '#/components/schemas/MetadataValue'
     AccountMetadataTransactionDTO:
       type: object
       description: Transaction to create or modify a multisig account.
@@ -2558,9 +2618,7 @@ components:
           format: int32
           description: Value size in bytes.
         value:
-          type: string
-          format: hex
-          description: 'When there is an existing value, the new value is calculated as xor(previous-value, value).'
+          $ref: '#/components/schemas/MetadataValue'
     MosaicMetadataTransactionDTO:
       type: object
       description: Transaction to create or modify a multisig account.
@@ -2592,9 +2650,7 @@ components:
           format: int32
           description: Value size in bytes.
         value:
-          type: string
-          format: hex
-          description: 'When there is an existing value, the new value is calculated as xor(previous-value, value).'
+          $ref: '#/components/schemas/MetadataValue'
     NamespaceMetadataTransactionDTO:
       type: object
       description: Transaction to create or modify a multisig account.
@@ -3009,8 +3065,10 @@ components:
       properties:
         id:
           type: string
+          description: Identifier of the namespace entry.
         active:
           type: boolean
+          description: 'If true, the namespace is active.'
         index:
           type: integer
           format: int32
@@ -3142,7 +3200,7 @@ components:
         * 0xF243 (62019 decimal) - Mosaic_Alias_Resolution.
     BalanceTransferReceiptDTO:
       type: object
-      description: Invisible state change that triggered a mosaic transfer.
+      description: Receipt stored when a state change that triggered a mosaic transfer.
       allOf:
         - $ref: '#/components/schemas/ReceiptDTO'
         - type: object
@@ -3162,7 +3220,7 @@ components:
               $ref: '#/components/schemas/Address'
     BalanceChangeReceiptDTO:
       type: object
-      description: Invisible state change that changed an account balance.
+      description: Receipt stored when a state change modified an account balance.
       allOf:
         - $ref: '#/components/schemas/ReceiptDTO'
         - type: object
@@ -3179,7 +3237,7 @@ components:
               $ref: '#/components/schemas/PublicKey'
     NamespaceExpiryReceiptDTO:
       type: object
-      description: An namespace expired in this block.
+      description: Receipt stored when a namespace expires.
       allOf:
         - $ref: '#/components/schemas/ReceiptDTO'
         - type: object
@@ -3190,7 +3248,7 @@ components:
               $ref: '#/components/schemas/NamespaceId'
     MosaicExpiryReceiptDTO:
       type: object
-      description: A mosaic expired in this block.
+      description: Receipt stored when a mosaic expires.
       allOf:
         - $ref: '#/components/schemas/ReceiptDTO'
         - type: object
@@ -3201,7 +3259,7 @@ components:
               $ref: '#/components/schemas/MosaicId'
     InflationReceiptDTO:
       type: object
-      description: Native currency mosaics that were created due to inflation.
+      description: Receipt stored when network currency mosaics were created due to inflation.
       allOf:
         - $ref: '#/components/schemas/ReceiptDTO'
         - type: object
@@ -3280,7 +3338,7 @@ components:
           type: integer
           format: int32
           description: |
-            Transaction index inside within the aggregate transaction.
+            Transaction index within the aggregate transaction.
             If the transaction is not an inner transaction, then the secondary id is set to 0.
           example: 0
     StatementsDTO:
@@ -3528,7 +3586,7 @@ components:
         - value
       properties:
         key:
-          $ref: '#/components/schemas/MosaicRestrictionKey'
+          $ref: '#/components/schemas/RestrictionKey'
         value:
           type: string
           description: Restriction value.
@@ -3565,7 +3623,7 @@ components:
         mosaicId:
           $ref: '#/components/schemas/UnresolvedMosaicId'
         restrictionKey:
-          $ref: '#/components/schemas/MosaicRestrictionKey'
+          $ref: '#/components/schemas/RestrictionKey'
         previousRestrictionValue:
           $ref: '#/components/schemas/RestrictionValue'
         newRestrictionValue:
@@ -3592,7 +3650,7 @@ components:
         - restriction
       properties:
         key:
-          $ref: '#/components/schemas/MosaicRestrictionKey'
+          $ref: '#/components/schemas/RestrictionKey'
         restriction:
           $ref: '#/components/schemas/MosaicGlobalRestrictionEntryRestrictionDTO'
     MosaicGlobalRestrictionEntryRestrictionDTO:
@@ -3642,7 +3700,7 @@ components:
         referenceMosaicId:
           $ref: '#/components/schemas/UnresolvedMosaicId'
         restrictionKey:
-          $ref: '#/components/schemas/MosaicRestrictionKey'
+          $ref: '#/components/schemas/RestrictionKey'
         previousRestrictionValue:
           $ref: '#/components/schemas/RestrictionValue'
         newRestrictionValue:
@@ -3685,7 +3743,8 @@ components:
           $ref: '#/components/schemas/MessageTypeEnum'
         payload:
           type: string
-          description: Content of the message in hexadecimal.
+          format: hex
+          description: Content of the message.
     TransferTransactionBodyDTO:
       type: object
       required:
@@ -3721,7 +3780,9 @@ components:
           type: array
           description: Array of addresses.
           items:
-            $ref: '#/components/schemas/Address'
+            type: string
+            description: Address encoded using a 32-character set.
+            example: SCUSLPL2PLSOABGEP5U4Z4GZFKDAU7TBO3QT777Z
     cosignature:
       type: object
       properties:
