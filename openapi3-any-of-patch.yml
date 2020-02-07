@@ -1358,7 +1358,7 @@ components:
       description: Address expressed in hexadecimal base.
       example: 9081FCCB41F8C8409A9B99E485E0E28D23BD6304EF7215E01A
     Amount:
-      type: string
+      type: x-number-string
       description: Absolute amount. An amount of 123456789 (absolute) for a mosaic with divisibility 6 means 123.456789 (relative).
       example: 123456
     BlockDuration:
@@ -1473,7 +1473,7 @@ components:
         amount:
           $ref: '#/components/schemas/Amount'
     RestrictionValue:
-      type: string
+      type: x-number-string
       description: Restriction value.
       example: 1000
     AccountTypeEnum:
