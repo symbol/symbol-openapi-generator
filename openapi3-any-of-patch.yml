@@ -1,8 +1,8 @@
 openapi: 3.0.2
 info:
-  version: 0.8.2
+  version: 0.8.3
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.0.20.10
+  description: OpenAPI Specification of catapult-rest 1.0.20.11
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -335,6 +335,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NetworkTypeDTO'
+  /network/fees:
+    get:
+      tags:
+        - Network routes
+      summary: Get transaction fees information
+      description: |
+        Returns information about the average, median, highest and lower fee multiplier over the last "numBlocksTransactionFeeStats".
+        The setting "numBlocksTransactionFeeStats" is adjustable via a configuration file (rest/resources/rest.json) per REST instance.
+      operationId: getNetworkFees
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkFeesDTO'
   /node/health:
     get:
       tags:
@@ -1667,6 +1683,32 @@ components:
       properties:
         height:
           $ref: '#/components/schemas/Height'
+    NetworkFeesDTO:
+      type: object
+      required:
+        - averageFeeMultiplier
+        - medianFeeMultiplier
+        - highestFeeMultiplier
+        - lowestFeeMultiplier
+      properties:
+        averageFeeMultiplier:
+          type: number
+          format: double
+          description: Average fee multiplier over the last "numBlocksTransactionFeeStats".
+          example: 1
+        medianFeeMultiplier:
+          type: number
+          format: double
+          description: Median fee multiplier over the last "numBlocksTransactionFeeStats".
+          example: 1
+        highestFeeMultiplier:
+          $ref: '#/components/schemas/BlockFeeMultiplier'
+          description: Highest fee multiplier over the last "numBlocksTransactionFeeStats".
+          example: 2
+        lowestFeeMultiplier:
+          $ref: '#/components/schemas/BlockFeeMultiplier'
+          description: Lowest fee multiplier over the last "numBlocksTransactionFeeStats".
+          example: 0
     NetworkTypeEnum:
       type: integer
       format: int32
