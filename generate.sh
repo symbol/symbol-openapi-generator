@@ -102,6 +102,8 @@ generateJava() {
     --additional-properties=groupId="io.nem" \
     --additional-properties="artifactId=$ARTIFACT_ID" \
     --additional-properties=artifactVersion="$FULL_VERSION" \
+    --additional-properties=dateLibrary=java8 \
+    --additional-properties=java8=true \
     --type-mappings=x-number-string=java.math.BigInteger
   buildJava $OPERATION
   return 0

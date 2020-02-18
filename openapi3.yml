@@ -1,8 +1,8 @@
 openapi: 3.0.2
 info:
-  version: 0.8.3
+  version: 0.8.4
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.0.20.11
+  description: OpenAPI Specification of catapult-rest 1.0.20.16
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -269,9 +269,16 @@ paths:
       summary: Get the merkle path for a given a transaction and block
       description: |
         Returns the merkle path for a transaction included in a block.
-        The path is the complementary data needed to calculate the merkle root.
-        A client can compare if the calculated root equals the one recorded in the
-        block header, verifying that the transaction was included in the block.
+        The merkle path is the minimum number of nodes needed to calculate the merkle root.
+
+        Steps to calculate the merkle root:
+        1. proofHash = hash (leaf).
+        2. Concatenate proofHash with the first unprocessed item from the merklePath list as follows:
+        * a) If item.position == left -> proofHash = sha_256(item.hash + proofHash).
+        * b) If item.position == right -> proofHash = sha_256(proofHash+ item.hash).
+        3. Repeat 2. for every item in the merklePath list.
+        4. Compare if the calculated proofHash equals the one recorded in the
+        block header (block.transactionsHash) to verify if the transaction was included in the block.
       operationId: getMerkleTransaction
       parameters:
         - $ref: '#/components/parameters/height'
@@ -1049,9 +1056,16 @@ paths:
       summary: Get the merkle path for a given a receipt statement hash and block
       description: |
         Returns the merkle path for a receipt statement or resolution linked to a block.
-        The path is the complementary data needed to calculate the merkle root.
-        A client can compare if the calculated root equals the one recorded in the block header,
-        verifying that the receipt was linked with the block.
+        The merkle path is the minimum number of nodes needed to calculate the merkle root.
+
+        Steps to calculate the merkle root:
+        1. proofHash = hash (leaf).
+        2. Concatenate proofHash with the first unprocessed item from the merklePath list as follows:
+        * a) If item.position == left -> proofHash = sha_256(item.hash + proofHash).
+        * b) If item.position == right -> proofHash = sha_256(proofHash+ item.hash).
+        3. Repeat 2. for every item in the merklePath list.
+        4. Compare if the calculated proofHash equals the one recorded in the
+        block header (block.receiptsHash) to verify if the statement was linked with the block.
       operationId: getMerkleReceipts
       parameters:
         - $ref: '#/components/parameters/height'
@@ -1321,9 +1335,10 @@ components:
     transactionType:
       name: type
       in: query
-      description: Transaction type to filter by.
+      description: 'Transaction types to filter by, separated by commas.'
       schema:
-        $ref: '#/components/schemas/TransactionTypeEnum'
+        type: string
+        example: '16717,16718,16973'
   requestBodies:
     accountIds:
       content:
@@ -1577,6 +1592,12 @@ components:
           type: integer
           format: int64
           description: Importance score for this bucket. This is taken into account to calculate the latest account importance.
+    PositionEnum:
+      type: string
+      enum:
+        - left
+        - right
+      description: Position relative to the proofHash being evaluated.
     BlockDTO:
       type: object
       allOf:
@@ -1651,11 +1672,10 @@ components:
           example: 1
     MerklePathItemDTO:
       type: object
+      description: 'Each merkle path item is composed of a hash, and a position relative to the proofHash being evaluated.'
       properties:
         position:
-          type: integer
-          format: uint32
-          example: 1
+          $ref: '#/components/schemas/PositionEnum'
         hash:
           $ref: '#/components/schemas/Hash256'
     MerkleProofInfoDTO:
@@ -1663,7 +1683,7 @@ components:
       properties:
         merklePath:
           type: array
-          description: Complementary data needed to calculate the merkle root.
+          description: List of complementary merkle path items needed to recalculate the merkle root.
           items:
             $ref: '#/components/schemas/MerklePathItemDTO'
     ChainScoreDTO:
@@ -1813,6 +1833,7 @@ components:
       required:
         - version
         - publicKey
+        - networkGenerationHash
         - roles
         - port
         - networkIdentifier
@@ -1826,6 +1847,8 @@ components:
           example: 0
         publicKey:
           $ref: '#/components/schemas/PublicKey'
+        networkGenerationHash:
+          $ref: '#/components/schemas/Hash256'
         roles:
           $ref: '#/components/schemas/RolesTypeEnum'
         port:
