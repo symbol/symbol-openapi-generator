@@ -17,7 +17,7 @@
 rootProject.name = 'symbol-openapi-generator'
 
 
-if (file('build/api-jersey2-client/build.gradle').exists()) {
+if (file('build/symbol-openapi-jersey2-client/build.gradle').exists()) {
     include ":symbol-openapi-jersey2-client"
     project(':symbol-openapi-jersey2-client').projectDir = file('build/symbol-openapi-jersey2-client')
 }
