@@ -29,7 +29,7 @@ echo "New Version: $NEW_VERSION"
 echo "Running post release git push"
 REMOTE_NAME="origin"
 RELEASE_BRANCH=release
-POST_RELEASE_BRANCH="post-$RELEASE_BRANCH"
+POST_RELEASE_BRANCH=master
 
 if [[ "${TRAVIS_REPO_SLUG}" ]]; then
   git remote rm $REMOTE_NAME

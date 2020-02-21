@@ -1,8 +1,8 @@
 openapi: 3.0.2
 info:
   version: 0.8.4
-  title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.0.20.16
+  title: Symbol REST Endpoints
+  description: OpenAPI Specification of symbol-rest 1.0.20.16
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -425,7 +425,7 @@ paths:
       tags:
         - Node routes
       summary: Get the version of the running REST component
-      description: Returns the version of the running catapult-rest component.
+      description: Returns the version of the running symbol-rest component.
       operationId: getServerInfo
       responses:
         '200':
@@ -483,7 +483,7 @@ paths:
       summary: Announce a new transaction
       description: |
         Announces a transaction to the network.
-        We recommended to use the NEM2-SDK to announce transactions as they should be serialized.
+        We recommended to use the SYMBOL-SDK to announce transactions as they should be serialized.
       operationId: announceTransaction
       requestBody:
         $ref: '#/components/requestBodies/transactionPayload'
@@ -1783,7 +1783,7 @@ components:
         description:
           type: string
           description: A short text describing the network.
-          example: catapult development network
+          example: symbol development network
     NodeStatusEnum:
       type: string
       enum:
