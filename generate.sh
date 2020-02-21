@@ -36,7 +36,7 @@ case "$FULL_VERSION" in
 *) echo SNAPSHOT=false ;;
 esac
 
-TRAVIS_REPO_SLUG="${TRAVIS_REPO_SLUG:-NEMStudios/nem2-open-api-generator}"
+TRAVIS_REPO_SLUG="${TRAVIS_REPO_SLUG:-nemtech/symbol-openapi-generator}"
 
 GIT_USER_ID="$(cut -d'/' -f1 <<<"$TRAVIS_REPO_SLUG")"
 GIT_REPO_ID="$(cut -d'/' -f2 <<<"$TRAVIS_REPO_SLUG")"
@@ -89,15 +89,15 @@ buildJava() {
 generateJava() {
   LIBRARY="$1"
   OPERATION="$2"
-  ARTIFACT_ID="api-$LIBRARY-client"
+  ARTIFACT_ID="symbol-openapi-$LIBRARY-client"
   echo "Generating $LIBRARY"
   rm -rf "$BUILD_DIR/$ARTIFACT_ID"
   openapi-generator generate -g java \
     -o "$BUILD_DIR/$ARTIFACT_ID" \
     -i "$INPUT" \
-    --additional-properties="apiPackage=io.nem.sdk.openapi.$LIBRARY.api" \
-    --additional-properties="invokerPackage=io.nem.sdk.openapi.$LIBRARY.invoker" \
-    --additional-properties="modelPackage=io.nem.sdk.openapi.$LIBRARY.model" \
+    --additional-properties="apiPackage=io.nem.symbol.sdk.openapi.$LIBRARY.api" \
+    --additional-properties="invokerPackage=io.nem.symbol.sdk.openapi.$LIBRARY.invoker" \
+    --additional-properties="modelPackage=io.nem.symbol.sdk.openapi.$LIBRARY.model" \
     --additional-properties=library="$LIBRARY" \
     --additional-properties=groupId="io.nem" \
     --additional-properties="artifactId=$ARTIFACT_ID" \
@@ -112,7 +112,7 @@ generateJava() {
 generateJavascript() {
   LIBRARY="$1"
   OPERATION="$2"
-  ARTIFACT_ID="nem2-sdk-openapi-$LIBRARY-client"
+  ARTIFACT_ID="symbol-openapi-$LIBRARY-client"
   echo "Generating $LIBRARY"
   rm -rf "$BUILD_DIR/$ARTIFACT_ID"
   openapi-generator generate -g "$LIBRARY" \

@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-rootProject.name = 'openapi-generator'
+rootProject.name = 'symbol-openapi-generator'
 
 
-if (file('build/api-jersey2-client/build.gradle').exists()) {
-    include ":api-jersey2-client"
-    project(':api-jersey2-client').projectDir = file('build/api-jersey2-client')
+if (file('build/symbol-openapi-jersey2-client/build.gradle').exists()) {
+    include ":symbol-openapi-jersey2-client"
+    project(':symbol-openapi-jersey2-client').projectDir = file('build/symbol-openapi-jersey2-client')
 }
 
-if (file('build/api-okhttp-gson-client/build.gradle').exists()) {
-    include ":api-okhttp-gson-client"
-    project(':api-okhttp-gson-client').projectDir = file('build/api-okhttp-gson-client')
+if (file('build/symbol-openapi-okhttp-gson-client/build.gradle').exists()) {
+    include ":symbol-openapi-okhttp-gson-client"
+    project(':symbol-openapi-okhttp-gson-client').projectDir = file('build/symbol-openapi-okhttp-gson-client')
 }
 
-if (file('build/api-vertx-client/build.gradle').exists()) {
-    include ":api-vertx-client"
-    project(':api-vertx-client').projectDir = file('build/api-vertx-client')
+if (file('build/symbol-openapi-vertx-client/build.gradle').exists()) {
+    include ":symbol-openapi-vertx-client"
+    project(':symbol-openapi-vertx-client').projectDir = file('build/symbol-openapi-vertx-client')
 }

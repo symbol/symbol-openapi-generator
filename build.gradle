@@ -46,7 +46,7 @@ def signingKeyId = getPropertyValue('signingKeyId')
 def signingPassword = getPropertyValue('signingPassword')
 
 def githubToken = getPropertyValue('GRGIT_USER')
-def repoPath = getPropertyValue('TRAVIS_REPO_SLUG', 'NEMStudios/nem2-open-api-generator')
+def repoPath = getPropertyValue('TRAVIS_REPO_SLUG', 'nemtech/symbol-openapi-generator')
 
 allprojects {
     ext."signing.keyId" = signingKeyId
@@ -100,7 +100,7 @@ subprojects {
                     packaging = 'jar'
                     url = "https://github.com/${repoPath}"
                     name = "${project.name}"
-                    description = "${project.name} Generated Open API client for nem2-sdk-java"
+                    description = "${project.name} Generated Open API client for symbol-sdk-java"
                     scm {
                         connection = "scm:git:https://github.com/${repoPath}.git"
                         developerConnection = "scm:svn:https://github.com/${repoPath}"

@@ -1,8 +1,8 @@
 openapi: 3.0.2
 info:
-  version: 0.8.4
+  version: 0.8.5
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.0.20.16
+  description: OpenAPI Specification of catapult-rest 1.0.20.19
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -392,20 +392,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NodeInfoDTO'
-  /node/time:
+  /node/peers:
     get:
       tags:
         - Node routes
-      summary: Get the node time
-      description: Gets the node time at the moment the reply was sent and received.
-      operationId: getNodeTime
+      summary: Get peers information
+      description: Gets the list of peers visible by the node.
+      operationId: getNodePeers
       responses:
         '200':
           description: success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NodeTimeDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/NodeInfoDTO'
   /node/storage:
     get:
       tags:
@@ -420,6 +422,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StorageInfoDTO'
+  /node/time:
+    get:
+      tags:
+        - Node routes
+      summary: Get the node time
+      description: Gets the node time at the moment the reply was sent and received.
+      operationId: getNodeTime
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeTimeDTO'
   /node/server:
     get:
       tags:
@@ -483,7 +499,7 @@ paths:
       summary: Announce a new transaction
       description: |
         Announces a transaction to the network.
-        We recommended to use the NEM2-SDK to announce transactions as they should be serialized.
+        We recommended to use the Symbol-SDKs to announce transactions because they should be serialized.
       operationId: announceTransaction
       requestBody:
         $ref: '#/components/requestBodies/transactionPayload'
@@ -1213,7 +1229,7 @@ paths:
         '409':
           $ref: '#/components/responses/InvalidArgument'
 externalDocs:
-  description: NEM Developer Center
+  description: Symbol Developers
   url: 'https://nemtech.github.io/'
 servers:
   - url: 'http://localhost:3000'
@@ -1336,9 +1352,12 @@ components:
       name: type
       in: query
       description: 'Transaction types to filter by, separated by commas.'
+      style: form
+      explode: false
       schema:
-        type: string
-        example: '16717,16718,16973'
+        type: array
+        items:
+          $ref: '#/components/schemas/TransactionTypeEnum'
   requestBodies:
     accountIds:
       content:
@@ -3139,7 +3158,7 @@ components:
           type: array
           description: Mosaic linked namespace names.
           example:
-            - cat.currency
+            - symbol.xym
           items:
             type: string
     MosaicsNamesDTO:
