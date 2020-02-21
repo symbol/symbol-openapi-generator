@@ -89,7 +89,7 @@ buildJava() {
 generateJava() {
   LIBRARY="$1"
   OPERATION="$2"
-  ARTIFACT_ID="api-$LIBRARY-client"
+  ARTIFACT_ID="symbol-openapi-$LIBRARY-client"
   echo "Generating $LIBRARY"
   rm -rf "$BUILD_DIR/$ARTIFACT_ID"
   openapi-generator generate -g java \
@@ -112,7 +112,7 @@ generateJava() {
 generateJavascript() {
   LIBRARY="$1"
   OPERATION="$2"
-  ARTIFACT_ID="symbol-sdk-openapi-$LIBRARY-client"
+  ARTIFACT_ID="symbol-openapi-$LIBRARY-client"
   echo "Generating $LIBRARY"
   rm -rf "$BUILD_DIR/$ARTIFACT_ID"
   openapi-generator generate -g "$LIBRARY" \

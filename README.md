@@ -7,9 +7,9 @@ Project in charge of generating the API client libraries used by the NEM2-SDKs.
 The ``generate`` script creates different flavours of clients according to the [current OpenAPI specification](https://github.com/nemtech/nem2-openapi).
 
 ## Supported languages
-| Language   | Flavours          | 
+| Language   | Template          | 
 |------------|------------------|
-| Javascript | typescript-node  |
+| Typescript | typescript-node  |
 | Java       | vertx            |
 |            | jersey2          |
 |            | okhttp-gson      |
@@ -32,7 +32,7 @@ npm install @openapitools/openapi-generator-cli@cli-4.1.0 -g
 
 The script will:
 
-1. Generate one library per flavor/framework/library.
+1. Generate one library per language / template / framework.
 2. Build each library.
 3. Build and install libraries using NPM and Gradle.
 
