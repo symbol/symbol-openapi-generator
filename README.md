@@ -24,7 +24,6 @@ See possible options for languages and flavours [here](https://openapi-generator
 ## Usage
 
 Once you have installed the dependencies, run:
-
 ~~~~
 npm install @openapitools/openapi-generator-cli@cli-4.1.0 -g
 ./generate.sh all build
