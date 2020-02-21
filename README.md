@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/nemtech/symbol-openapi-generator.svg?branch=master)](https://travis-ci.org/nemtech/symbol-openapi-generator)
 
-Project in charge of generating the API client libraries used by the NEM2-SDKs.
+Project in charge of generating the API client libraries used by the Symbol SDKs.
 
-The ``generate`` script creates different flavours of clients according to the [current OpenAPI specification](https://github.com/nemtech/nem2-openapi).
+The ``generate`` script creates different flavours of clients according to the [current OpenAPI specification](https://github.com/nemtech/symbol-openapi).
 
 ## Supported languages
 | Language   | Template          | 
