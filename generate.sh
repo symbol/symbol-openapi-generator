@@ -10,6 +10,7 @@ if [ "$1" == "-h" ]; then
   echo "   * vertx: it generates vertx java version"
   echo "   * okhttp-gson: it generates okhttp-gson java version"
   echo "   * typescript-node: it generates typescript-node javascript version"
+  echo "   * python: it generates python version"
   echo "[operation] is optional. Possible values: "
   echo "   * no value | unknown value: It generates and builds the libraries."
   echo "   * publish | master: It generates, builds, and publish the libraries and documentation to npm, maven repos and/or github pages. "
@@ -19,7 +20,7 @@ fi
 LIBRARY_ARG="$1"
 OPERATION_ARG="$2"
 
-arg1Values=['all','java','jersey2','vertx','okhttp-gson','typescript-node']
+arg1Values=['all','java','jersey2','vertx','okhttp-gson','typescript-node','python']
 
 if [[ " ${arg1Values[*]} " != *"$LIBRARY_ARG"* || "" == "$LIBRARY_ARG" ]]; then
   echo "Usage: $(basename $0) [library] [operation]"
@@ -139,6 +140,23 @@ generateJavascript() {
   return 0
 }
 
+generatePython() {
+  LIBRARY="$1"
+  OPERATION="$2"
+  ARTIFACT_ID="symbol-openapi-$LIBRARY-client"
+  echo "Generating $LIBRARY"
+  rm -rf "$BUILD_DIR/$ARTIFACT_ID"
+  openapi-generator generate -g "$LIBRARY" \
+    -o "$BUILD_DIR/$ARTIFACT_ID" \
+    -t "$LIBRARY-templates/" \
+    -i "$INPUT" \
+    --additional-properties="projectName=$ARTIFACT_ID" \
+    --additional-properties="packageVersion=$VERSION" \
+    --additional-properties="snapshot=$SNAPSHOT" \
+    --type-mappings=x-number-string=int
+  return 0
+}
+
 if [[ $LIBRARY_ARG == "all" ]]; then
   echo "Generating $LIBRARY_ARG and running operation $OPERATION_ARG"
   generateJava "jersey2" "build"
@@ -146,6 +164,7 @@ if [[ $LIBRARY_ARG == "all" ]]; then
   generateJava "okhttp-gson" "build"
   buildJava "$OPERATION_ARG" "build"
   generateJavascript "typescript-node" "$OPERATION_ARG"
+  generatePython "python" "$OPERATION_ARG"
 fi
 
 if [[ $LIBRARY_ARG == "java" ]]; then
@@ -170,4 +189,8 @@ fi
 
 if [[ $LIBRARY_ARG == "typescript-node" ]]; then
   generateJavascript "$LIBRARY_ARG" "$OPERATION_ARG"
+fi
+
+if [[ $LIBRARY_ARG == "python" ]]; then
+  generatePython "$LIBRARY_ARG" "$OPERATION_ARG"
 fi
