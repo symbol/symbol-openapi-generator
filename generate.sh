@@ -154,6 +154,7 @@ generatePython() {
     --additional-properties="packageVersion=$VERSION" \
     --additional-properties="snapshot=$SNAPSHOT" \
     --type-mappings=x-number-string=int
+  echo "DONE"
   return 0
 }
 
