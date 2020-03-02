@@ -144,6 +144,10 @@ generatePython() {
   LIBRARY="$1"
   OPERATION="$2"
   ARTIFACT_ID="symbol-openapi-$LIBRARY-client"
+  PACKAGE_NAME="symbol_openapi_client"
+  LICENSE_INFO="Apache-2.0"
+  INFO_NAME="nemtech"
+  INFO_EMAIL="https://nemtech.github.io/contribute/community.html"
   echo "Generating $LIBRARY"
   rm -rf "$BUILD_DIR/$ARTIFACT_ID"
   openapi-generator generate -g "$LIBRARY" \
@@ -151,10 +155,13 @@ generatePython() {
     -t "$LIBRARY-templates/" \
     -i "$INPUT" \
     --additional-properties="projectName=$ARTIFACT_ID" \
+    --additional-properties="packageName=$PACKAGE_NAME" \
     --additional-properties="packageVersion=$VERSION" \
+    --additional-properties="licenseInfo=$LICENSE_INFO" \
+    --additional-properties="infoName=$INFO_NAME" \
+    --additional-properties="infoEmail=$INFO_EMAIL" \
     --additional-properties="snapshot=$SNAPSHOT" \
     --type-mappings=x-number-string=int
-  echo "DONE"
   return 0
 }
 
