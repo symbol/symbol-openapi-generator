@@ -94,6 +94,7 @@ generateJava() {
   rm -rf "$BUILD_DIR/$ARTIFACT_ID"
   openapi-generator generate -g java \
     -o "$BUILD_DIR/$ARTIFACT_ID" \
+    -t "java-templates/" \
     -i "$INPUT" \
     --additional-properties="apiPackage=io.nem.symbol.sdk.openapi.$LIBRARY.api" \
     --additional-properties="invokerPackage=io.nem.symbol.sdk.openapi.$LIBRARY.invoker" \
