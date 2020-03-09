@@ -94,6 +94,7 @@ generateJava() {
   rm -rf "$BUILD_DIR/$ARTIFACT_ID"
   openapi-generator generate -g java \
     -o "$BUILD_DIR/$ARTIFACT_ID" \
+    -t "java-templates/" \
     -i "$INPUT" \
     --additional-properties="apiPackage=io.nem.symbol.sdk.openapi.$LIBRARY.api" \
     --additional-properties="invokerPackage=io.nem.symbol.sdk.openapi.$LIBRARY.invoker" \
@@ -132,7 +133,11 @@ generateJavascript() {
   cp "$LIBRARY-templates/README.md" "$BUILD_DIR/$ARTIFACT_ID"
   sh -c "cd $BUILD_DIR/$ARTIFACT_ID && npm install"
   sh -c "cd $BUILD_DIR/$ARTIFACT_ID && npm run-script build"
-  if [[ $OPERATION == "publish" || $OPERATION == "release" ]]; then
+  if [[ $OPERATION == "publish" ]]; then
+    cp "$LIBRARY-templates/.npmrc" "$BUILD_DIR/$ARTIFACT_ID/.npmrc"
+    sh -c "cd $BUILD_DIR/$ARTIFACT_ID && npm publish --tag snapshot"
+  fi
+  if [[ $OPERATION == "release" ]]; then
     cp "$LIBRARY-templates/.npmrc" "$BUILD_DIR/$ARTIFACT_ID/.npmrc"
     sh -c "cd $BUILD_DIR/$ARTIFACT_ID && npm publish"
   fi

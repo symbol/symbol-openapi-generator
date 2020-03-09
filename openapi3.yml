@@ -1,8 +1,8 @@
 openapi: 3.0.2
 info:
-  version: 0.8.5
+  version: 0.8.6
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.0.20.19
+  description: OpenAPI Specification of catapult-rest 1.0.20.20
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -358,6 +358,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NetworkFeesDTO'
+  /network/properties:
+    get:
+      tags:
+        - Network routes
+      summary: Get the network properties
+      description: |
+        Returns the content from a catapult-server network configuration file (resources/config-network.properties).
+        To enable this feature, the REST setting "network.propertiesFilePath" must define where the file is located.
+        This is adjustable via the configuration file (rest/resources/rest.json) per REST instance.
+      operationId: getNetworkProperties
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkConfigurationDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
   /node/health:
     get:
       tags:
@@ -1353,7 +1372,7 @@ components:
       in: query
       description: 'Transaction types to filter by, separated by commas.'
       style: form
-      explode: false
+      explode: true
       schema:
         type: array
         items:
@@ -1410,7 +1429,7 @@ components:
     Amount:
       type: string
       description: Absolute amount. An amount of 123456789 (absolute) for a mosaic with divisibility 6 means 123.456789 (relative).
-      example: 123456
+      example: '123456'
     BlockDuration:
       type: string
       description: Duration expressed in number of blocks.
@@ -1722,6 +1741,21 @@ components:
       properties:
         height:
           $ref: '#/components/schemas/Height'
+    NetworkTypeEnum:
+      type: integer
+      format: int32
+      enum:
+        - 104
+        - 152
+        - 96
+        - 144
+      description: |
+        Network type:
+        * 0x60 (96 decimal) - Private network.
+        * 0x90 (144 decimal) - Private test network.
+        * 0x68 (104 decimal) - Public main network.
+        * 0x98 (152 decimal) - Public test network.
+      example: 144
     NetworkFeesDTO:
       type: object
       required:
@@ -1748,21 +1782,6 @@ components:
           $ref: '#/components/schemas/BlockFeeMultiplier'
           description: Lowest fee multiplier over the last "numBlocksTransactionFeeStats".
           example: 0
-    NetworkTypeEnum:
-      type: integer
-      format: int32
-      enum:
-        - 104
-        - 152
-        - 96
-        - 144
-      description: |
-        Network type:
-        * 0x60 (96 decimal) - Private network.
-        * 0x90 (144 decimal) - Private test network.
-        * 0x68 (104 decimal) - Public main network.
-        * 0x98 (152 decimal) - Public test network.
-      example: 144
     EntityDTO:
       type: object
       required:
@@ -1789,6 +1808,13 @@ components:
       properties:
         signature:
           $ref: '#/components/schemas/Signature'
+    NodeIdentityEqualityStrategy:
+      type: string
+      description: |
+        Node equality strategy. Defines if the identifier for the node must be its public key or host.
+      enum:
+        - host
+        - public-key
     NetworkTypeDTO:
       type: object
       required:
@@ -1803,6 +1829,156 @@ components:
           type: string
           description: A short text describing the network.
           example: catapult development network
+    ChainPropertiesDTO:
+      type: object
+      description: Chain related configuration properties.
+      properties:
+        enableVerifiableState:
+          type: boolean
+          description: Set to true if block chain should calculate state hashes so that state is fully verifiable at each block.
+          example: true
+        enableVerifiableReceipts:
+          type: boolean
+          description: Set to true if block chain should calculate receipts so that state changes are fully verifiable at each block.
+          example: true
+        currencyMosaicId:
+          type: string
+          description: Mosaic id used as primary chain currency.
+          example: 0x621E'C5B4'0385'6FC2
+        harvestingMosaicId:
+          type: string
+          description: Mosaic id used to provide harvesting ability.
+          example: 0x4291'ED23'000A'037A
+        blockGenerationTargetTime:
+          type: string
+          description: Targeted time between blocks.
+          example: 15s
+        blockTimeSmoothingFactor:
+          type: string
+          description: A higher value makes the network more biased.
+          example: '3000'
+        importanceGrouping:
+          type: string
+          description: Number of blocks that should be treated as a group for importance purposes.
+          example: '39'
+        importanceActivityPercentage:
+          type: string
+          description: Percentage of importance resulting from fee generation and beneficiary usage.
+          example: '5'
+        maxRollbackBlocks:
+          type: string
+          description: Maximum number of blocks that can be rolled back.
+          example: '40'
+        maxDifficultyBlocks:
+          type: string
+          description: Maximum number of blocks to use in a difficulty calculation.
+          example: '60'
+        defaultDynamicFeeMultiplier:
+          type: string
+          description: Default multiplier to use for dynamic fees.
+          example: 10'000
+        maxTransactionLifetime:
+          type: string
+          description: Maximum lifetime a transaction can have before it expires.
+          example: 24h
+        maxBlockFutureTime:
+          type: string
+          description: Maximum future time of a block that can be accepted.
+          example: 500ms
+        initialCurrencyAtomicUnits:
+          type: string
+          description: Initial currency atomic units available in the network.
+          example: 8'998'999'998'000'000
+        maxMosaicAtomicUnits:
+          type: string
+          description: Maximum atomic units (total-supply * 10 ^ divisibility) of a mosaic allowed in the network.
+          example: 9'000'000'000'000'000
+        totalChainImportance:
+          type: string
+          description: Total whole importance units available in the network.
+          example: 15'000'000
+        minHarvesterBalance:
+          type: string
+          description: Minimum number of harvesting mosaic atomic units needed for an account to be eligible for harvesting.
+          example: '500'
+        maxHarvesterBalance:
+          type: string
+          description: Maximum number of harvesting mosaic atomic units needed for an account to be eligible for harvesting.
+          example: 4'000'000
+        harvestBeneficiaryPercentage:
+          type: string
+          description: Percentage of the harvested fee that is collected by the beneficiary account.
+          example: '10'
+        blockPruneInterval:
+          type: string
+          description: Number of blocks between cache pruning.
+          example: '360'
+        maxTransactionsPerBlock:
+          type: string
+          description: Maximum number of transactions per block.
+          example: 200'000
+    NetworkConfigurationDTO:
+      type: object
+      required:
+        - network
+        - chain
+        - plugins
+      properties:
+        network:
+          $ref: '#/components/schemas/NetworkPropertiesDTO'
+        chain:
+          $ref: '#/components/schemas/ChainPropertiesDTO'
+        plugins:
+          $ref: '#/components/schemas/PluginsPropertiesDTO'
+    NetworkPropertiesDTO:
+      type: object
+      description: Network related configuration properties.
+      properties:
+        identifier:
+          type: string
+          description: Network identifier.
+          example: mijin-test
+        nodeEqualityStrategy:
+          $ref: '#/components/schemas/NodeIdentityEqualityStrategy'
+          example: host
+        publicKey:
+          $ref: '#/components/schemas/PublicKey'
+          description: Nemesis public key.
+          example: B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF
+        generationHash:
+          $ref: '#/components/schemas/Hash256'
+          description: Nemesis generation hash.
+          example: 57F7DA205008026C776CB6AED843393F04CD458E0AA2D9F1D5F31A402072B2D6
+        epochAdjustment:
+          type: string
+          description: Nemesis epoch time adjustment.
+          example: 1573430400s
+    PluginsPropertiesDTO:
+      type: object
+      description: Plugin related configuration properties.
+      properties:
+        accountlink:
+          $ref: '#/components/schemas/AccountLinkNetworkPropertiesDTO'
+        aggregate:
+          $ref: '#/components/schemas/AggregateNetworkPropertiesDTO'
+        lockhash:
+          $ref: '#/components/schemas/HashLockNetworkPropertiesDTO'
+        locksecret:
+          $ref: '#/components/schemas/SecretLockNetworkPropertiesDTO'
+        metadata:
+          $ref: '#/components/schemas/MetadataNetworkPropertiesDTO'
+        mosaic:
+          $ref: '#/components/schemas/MosaicNetworkPropertiesDTO'
+        multisig:
+          $ref: '#/components/schemas/MultisigNetworkPropertiesDTO'
+        namespace:
+          $ref: '#/components/schemas/NamespaceNetworkPropertiesDTO'
+        restrictionaccount:
+          $ref: '#/components/schemas/AccountRestrictionNetworkPropertiesDTO'
+        restrictionmosaic:
+          $ref: '#/components/schemas/MosaicRestrictionNetworkPropertiesDTO'
+        transfer:
+          $ref: '#/components/schemas/TransferNetworkPropertiesDTO'
     NodeStatusEnum:
       type: string
       enum:
@@ -2308,7 +2484,6 @@ components:
       type: object
       allOf:
         - $ref: '#/components/schemas/EntityDTO'
-        - $ref: '#/components/schemas/TransactionBodyDTO'
     EmbeddedTransactionInfoDTO:
       type: object
       required:
@@ -2456,6 +2631,12 @@ components:
         Type of action:
         * 0 - Unlink.
         * 1 - Link.
+    AccountLinkNetworkPropertiesDTO:
+      type: object
+      properties:
+        dummy:
+          type: string
+          description: to trigger plugin load
     AccountLinkTransactionBodyDTO:
       type: object
       required:
@@ -2477,6 +2658,29 @@ components:
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
         - $ref: '#/components/schemas/AccountLinkTransactionBodyDTO'
+    AggregateNetworkPropertiesDTO:
+      type: object
+      properties:
+        maxTransactionsPerAggregate:
+          type: string
+          description: Maximum number of transactions per aggregate.
+          example: 1'000
+        maxCosignaturesPerAggregate:
+          type: string
+          description: Maximum number of cosignatures per aggregate.
+          example: '15'
+        enableStrictCosignatureCheck:
+          type: boolean
+          description: Set to true if cosignatures must exactly match component signers. Set to false if cosignatures should be validated externally.
+          example: false
+        enableBondedAggregateSupport:
+          type: boolean
+          description: Set to true if bonded aggregates should be allowed. Set to false if bonded aggregates should be rejected.
+          example: true
+        maxBondedTransactionLifetime:
+          type: string
+          description: Maximum lifetime a bonded transaction can have before it expires.
+          example: 48h
     AggregateTransactionBodyDTO:
       type: object
       required:
@@ -2539,6 +2743,17 @@ components:
       allOf:
         - $ref: '#/components/schemas/TransactionDTO'
         - $ref: '#/components/schemas/HashLockTransactionBodyDTO'
+    HashLockNetworkPropertiesDTO:
+      type: object
+      properties:
+        lockedFundsPerAggregate:
+          type: string
+          description: Amount that has to be locked per aggregate in partial cache.
+          example: 10'000'000
+        maxHashLockDuration:
+          type: string
+          description: Maximum number of blocks for which a hash lock can exist.
+          example: 2d
     LockHashAlgorithmEnum:
       type: integer
       format: int32
@@ -2563,6 +2778,21 @@ components:
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
         - $ref: '#/components/schemas/SecretProofTransactionBodyDTO'
+    SecretLockNetworkPropertiesDTO:
+      type: object
+      properties:
+        maxSecretLockDuration:
+          type: string
+          description: Maximum number of blocks for which a secret lock can exist.
+          example: 30d
+        minProofSize:
+          type: string
+          description: Minimum size of a proof in bytes.
+          example: '1'
+        maxProofSize:
+          type: string
+          description: Maximum size of a proof in bytes.
+          example: '1000'
     SecretLockTransactionBodyDTO:
       type: object
       required:
@@ -2718,6 +2948,13 @@ components:
           type: string
           format: hex
           description: Metadata value.
+    MetadataNetworkPropertiesDTO:
+      type: object
+      properties:
+        maxValueSize:
+          type: string
+          description: Maximum metadata value size.
+          example: '1024'
     MosaicMetadataTransactionBodyDTO:
       type: object
       required:
@@ -2890,6 +3127,29 @@ components:
       properties:
         mosaic:
           $ref: '#/components/schemas/MosaicDTO'
+    MosaicNetworkPropertiesDTO:
+      type: object
+      properties:
+        maxMosaicsPerAccount:
+          type: string
+          description: Maximum number of mosaics that an account can own.
+          example: 10'000
+        maxMosaicDuration:
+          type: string
+          description: Maximum mosaic duration.
+          example: 3650d
+        maxMosaicDivisibility:
+          type: string
+          description: Maximum mosaic divisibility.
+          example: '6'
+        mosaicRentalFeeSinkPublicKey:
+          $ref: '#/components/schemas/PublicKey'
+          description: Public key of the mosaic rental fee sink account.
+          example: 53E140B5947F104CABC2D6FE8BAEDBC30EF9A0609C717D9613DE593EC2A266D3
+        mosaicRentalFee:
+          type: string
+          description: Mosaic rental fee.
+          example: '500'
     MosaicsInfoDTO:
       type: object
       required:
@@ -3021,6 +3281,21 @@ components:
             - 565059F55E68F904214E8BE1D610B5BBEA4CE46CC13D246D45BC1DAE5D32A0D2
           items:
             $ref: '#/components/schemas/PublicKey'
+    MultisigNetworkPropertiesDTO:
+      type: object
+      properties:
+        maxMultisigDepth:
+          type: string
+          description: Maximum number of multisig levels.
+          example: '3'
+        maxCosignatoriesPerAccount:
+          type: string
+          description: Maximum number of cosignatories per account.
+          example: '10'
+        maxCosignedAccountsPerAccount:
+          type: string
+          description: Maximum number of accounts a single account can cosign.
+          example: '5'
     AliasActionEnum:
       type: integer
       format: int32
@@ -3249,6 +3524,49 @@ components:
           type: string
           description: Namespace name.
           example: cat
+    NamespaceNetworkPropertiesDTO:
+      type: object
+      properties:
+        maxNameSize:
+          type: string
+          description: Maximum namespace name size.
+          example: '64'
+        maxChildNamespaces:
+          type: string
+          description: Maximum number of children for a root namespace.
+          example: '500'
+        maxNamespaceDepth:
+          type: string
+          description: Maximum namespace depth.
+          example: '3'
+        minNamespaceDuration:
+          type: string
+          description: Minimum namespace duration.
+          example: 1m
+        maxNamespaceDuration:
+          type: string
+          description: Maximum namespace duration.
+          example: 365d
+        namespaceGracePeriodDuration:
+          type: string
+          description: Grace period during which time only the previous owner can renew an expired namespace.
+          example: 2m
+        reservedRootNamespaceNames:
+          type: string
+          description: Reserved root namespaces that cannot be claimed.
+          example: 'xem, nem, user, account, org, com, biz, net, edu, mil, gov, info'
+        namespaceRentalFeeSinkPublicKey:
+          $ref: '#/components/schemas/PublicKey'
+          description: Public key of the namespace rental fee sink account.
+          example: 3E82E1C1E4A75ADAA3CBA8C101C3CD31D9817A2EB966EB3B511FB2ED45B8E262
+        rootNamespaceRentalFeePerBlock:
+          type: string
+          description: Root namespace rental fee per block.
+          example: '1'
+        childNamespaceRentalFee:
+          type: string
+          description: Child namespace rental fee.
+          example: '100'
     NamespaceRegistrationTransactionBodyDTO:
       type: object
       required:
@@ -3655,6 +3973,13 @@ components:
               - $ref: '#/components/schemas/UnresolvedAddress'
               - $ref: '#/components/schemas/UnresolvedMosaicId'
               - $ref: '#/components/schemas/TransactionTypeEnum'
+    AccountRestrictionNetworkPropertiesDTO:
+      type: object
+      properties:
+        maxAccountRestrictionValues:
+          type: string
+          description: Maximum number of account restriction values.
+          example: '512'
     EmbeddedAccountAddressRestrictionTransactionDTO:
       type: object
       allOf:
@@ -3852,6 +4177,13 @@ components:
       allOf:
         - $ref: '#/components/schemas/TransactionDTO'
         - $ref: '#/components/schemas/MosaicGlobalRestrictionTransactionBodyDTO'
+    MosaicRestrictionNetworkPropertiesDTO:
+      type: object
+      properties:
+        maxMosaicRestrictionValues:
+          type: string
+          description: Maximum number of mosaic restriction values.
+          example: '20'
     MessageTypeEnum:
       type: integer
       format: int32
@@ -3882,6 +4214,13 @@ components:
           type: string
           format: hex
           description: Content of the message.
+    TransferNetworkPropertiesDTO:
+      type: object
+      properties:
+        maxMessageSize:
+          type: string
+          description: Maximum transaction message size.
+          example: '1024'
     TransferTransactionBodyDTO:
       type: object
       required:

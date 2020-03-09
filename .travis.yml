@@ -13,7 +13,7 @@ cache:
 env:
   - GEN_LIBRARY=typescript-node
   - GEN_LIBRARY=java
-install: npm install @openapitools/openapi-generator-cli@cli-4.1.0 -g
+install: npm install @openapitools/openapi-generator-cli@cli-4.2.3 -g
 script:  bash generate.sh $GEN_LIBRARY build
 deploy:
   - provider: script
