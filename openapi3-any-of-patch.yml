@@ -1,8 +1,8 @@
 openapi: 3.0.2
 info:
-  version: 0.8.6
+  version: 0.8.7
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.0.20.20
+  description: OpenAPI Specification of catapult-rest 1.0.20.22
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -342,22 +342,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NetworkTypeDTO'
-  /network/fees:
+  /network/fees/rental:
     get:
       tags:
         - Network routes
-      summary: Get transaction fees information
+      summary: Get rental fees information
       description: |
-        Returns information about the average, median, highest and lower fee multiplier over the last "numBlocksTransactionFeeStats".
-        The setting "numBlocksTransactionFeeStats" is adjustable via a configuration file (rest/resources/rest.json) per REST instance.
-      operationId: getNetworkFees
+        Returns the estimated effective rental fees for namespaces and mosaics.
+        This endpoint is only available if the REST instance has access to catapult-server ``resources/config-network.properties`` file.
+        To activate this feature, add the setting "network.propertiesFilePath" in the configuration file (rest/resources/rest.json).
+      operationId: getRentalFees
       responses:
         '200':
           description: success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NetworkFeesDTO'
+                $ref: '#/components/schemas/RentalFeesDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  /network/fees/transaction:
+    get:
+      tags:
+        - Network routes
+      summary: Get transaction fees information
+      description: |
+        Returns the average, median, highest and lower fee multiplier over the last "numBlocksTransactionFeeStats".
+        The setting "numBlocksTransactionFeeStats" is adjustable via the configuration file (rest/resources/rest.json) per REST instance.
+      operationId: getTransactionFees
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionFeesDTO'
   /network/properties:
     get:
       tags:
@@ -1275,11 +1294,10 @@ components:
       description: |
         Number of elements to be returned.
         The limit should be greater than or equal to "db.pageSizeMin" and not higher than "db.pageSizeMax".
-        The settings are adjustable via a configuration file (rest/resources/rest.json) per REST instance.
+        The settings are adjustable via the configuration file (rest/resources/rest.json) per REST instance.
       required: true
       schema:
         type: integer
-        format: int32
     metadataIdLimit:
       name: id
       in: query
@@ -1329,7 +1347,6 @@ components:
       description: Number of transactions to return for each request.
       schema:
         type: integer
-        format: int32
         minimum: 10
         maximum: 100
         default: 10
@@ -1370,7 +1387,9 @@ components:
     transactionType:
       name: type
       in: query
-      description: 'Transaction types to filter by, separated by commas.'
+      description: |
+        Transaction type to filter by.
+        To filter by multiple transaction types, add more filter query params like: ``type=16974&type=16718``.
       style: form
       explode: true
       schema:
@@ -1436,7 +1455,6 @@ components:
       example: 200
     BlockFeeMultiplier:
       type: integer
-      format: int32
       description: Fee multiplier applied to transactions contained in block.
       example: 0
     Difficulty:
@@ -1547,7 +1565,6 @@ components:
       example: 1000
     AccountTypeEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -1620,15 +1637,12 @@ components:
           $ref: '#/components/schemas/Height'
         totalFeesPaid:
           type: integer
-          format: int64
           description: Fees paid by the account for this bucket.
         beneficiaryCount:
           type: integer
-          format: int32
           description: Number of times the account has been a beneficiary for this bucket.
         rawScore:
           type: integer
-          format: int64
           description: Importance score for this bucket. This is taken into account to calculate the latest account importance.
     PositionEnum:
       type: string
@@ -1702,11 +1716,9 @@ components:
             $ref: '#/components/schemas/Hash256'
         numTransactions:
           type: integer
-          format: int32
           example: 0
         numStatements:
           type: integer
-          format: int32
           example: 1
     MerklePathItemDTO:
       type: object
@@ -1741,9 +1753,51 @@ components:
       properties:
         height:
           $ref: '#/components/schemas/Height'
+    RentalFeesDTO:
+      type: object
+      required:
+        - effectiveRootNamespaceRentalFeePerBlock
+        - effectiveChildNamespaceRentalFee
+        - effectiveMosaicRentalFee
+      properties:
+        effectiveRootNamespaceRentalFeePerBlock:
+          $ref: '#/components/schemas/Amount'
+          description: Estimated effective rental fee to register/extend a namespace per block.
+          example: 0
+        effectiveChildNamespaceRentalFee:
+          $ref: '#/components/schemas/Amount'
+          description: Estimated effective rental fee to create a subnamespace.
+          example: 0
+        effectiveMosaicRentalFee:
+          $ref: '#/components/schemas/Amount'
+          description: Estimated effective rental fee to create a mosaic.
+          example: 0
+    TransactionFeesDTO:
+      type: object
+      required:
+        - averageFeeMultiplier
+        - medianFeeMultiplier
+        - highestFeeMultiplier
+        - lowestFeeMultiplier
+      properties:
+        averageFeeMultiplier:
+          type: integer
+          description: Average fee multiplier over the last "numBlocksTransactionFeeStats".
+          example: 1
+        medianFeeMultiplier:
+          type: integer
+          description: Median fee multiplier over the last "numBlocksTransactionFeeStats".
+          example: 1
+        highestFeeMultiplier:
+          $ref: '#/components/schemas/BlockFeeMultiplier'
+          description: Highest fee multiplier over the last "numBlocksTransactionFeeStats".
+          example: 2
+        lowestFeeMultiplier:
+          $ref: '#/components/schemas/BlockFeeMultiplier'
+          description: Lowest fee multiplier over the last "numBlocksTransactionFeeStats".
+          example: 0
     NetworkTypeEnum:
       type: integer
-      format: int32
       enum:
         - 104
         - 152
@@ -1756,32 +1810,6 @@ components:
         * 0x68 (104 decimal) - Public main network.
         * 0x98 (152 decimal) - Public test network.
       example: 144
-    NetworkFeesDTO:
-      type: object
-      required:
-        - averageFeeMultiplier
-        - medianFeeMultiplier
-        - highestFeeMultiplier
-        - lowestFeeMultiplier
-      properties:
-        averageFeeMultiplier:
-          type: number
-          format: double
-          description: Average fee multiplier over the last "numBlocksTransactionFeeStats".
-          example: 1
-        medianFeeMultiplier:
-          type: number
-          format: double
-          description: Median fee multiplier over the last "numBlocksTransactionFeeStats".
-          example: 1
-        highestFeeMultiplier:
-          $ref: '#/components/schemas/BlockFeeMultiplier'
-          description: Highest fee multiplier over the last "numBlocksTransactionFeeStats".
-          example: 2
-        lowestFeeMultiplier:
-          $ref: '#/components/schemas/BlockFeeMultiplier'
-          description: Lowest fee multiplier over the last "numBlocksTransactionFeeStats".
-          example: 0
     EntityDTO:
       type: object
       required:
@@ -1794,13 +1822,11 @@ components:
           $ref: '#/components/schemas/PublicKey'
         version:
           type: integer
-          format: int32
           description: Entity version.
         network:
           $ref: '#/components/schemas/NetworkTypeEnum'
         type:
           type: integer
-          format: int32
     VerifiableEntityDTO:
       type: object
       required:
@@ -1986,7 +2012,6 @@ components:
         - down
     RolesTypeEnum:
       type: integer
-      format: int32
       enum:
         - 1
         - 2
@@ -2038,7 +2063,6 @@ components:
         version:
           type: integer
           description: Version of the application.
-          format: int32
           example: 0
         publicKey:
           $ref: '#/components/schemas/PublicKey'
@@ -2049,11 +2073,9 @@ components:
         port:
           type: integer
           description: Port used for the communication.
-          format: int32
           example: 7900
         networkIdentifier:
           type: integer
-          format: int32
           example: 144
         friendlyName:
           type: string
@@ -2100,17 +2122,14 @@ components:
       properties:
         numBlocks:
           type: integer
-          format: int64
           description: Number of blocks stored.
           example: 245053
         numTransactions:
           type: integer
-          format: int64
           description: Number of transactions stored.
           example: 58590
         numAccounts:
           type: integer
-          format: int64
           description: Number of accounts created.
           example: 177
     TransactionStateTypeEnum:
@@ -2512,7 +2531,6 @@ components:
           description: Identifier of the aggregate transaction.
         index:
           type: integer
-          format: int32
           description: Transaction index within the aggregate.
         id:
           type: string
@@ -2560,7 +2578,6 @@ components:
           $ref: '#/components/schemas/Hash256'
         index:
           type: integer
-          format: int32
           description: Transaction index within the block.
         id:
           type: string
@@ -2584,7 +2601,6 @@ components:
           $ref: '#/components/schemas/Height'
     AccountLinkActionEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -2717,7 +2733,6 @@ components:
           example: 2d
     LockHashAlgorithmEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -2807,7 +2822,6 @@ components:
         - $ref: '#/components/schemas/SecretProofTransactionBodyDTO'
     MetadataTypeEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -2832,11 +2846,9 @@ components:
           $ref: '#/components/schemas/MetadataKey'
         valueSizeDelta:
           type: integer
-          format: int32
           description: Change in value size in bytes.
         valueSize:
           type: integer
-          format: int32
           description: Value size in bytes.
         value:
           $ref: '#/components/schemas/MetadataValue'
@@ -2932,11 +2944,9 @@ components:
           $ref: '#/components/schemas/UnresolvedMosaicId'
         valueSizeDelta:
           type: integer
-          format: int32
           description: Change in value size in bytes.
         valueSize:
           type: integer
-          format: int32
           description: Value size in bytes.
         value:
           $ref: '#/components/schemas/MetadataValue'
@@ -2964,11 +2974,9 @@ components:
           $ref: '#/components/schemas/NamespaceId'
         valueSizeDelta:
           type: integer
-          format: int32
           description: Change in value size in bytes.
         valueSize:
           type: integer
-          format: int32
           description: Value size in bytes.
         value:
           $ref: '#/components/schemas/MetadataValue'
@@ -2980,7 +2988,6 @@ components:
         - $ref: '#/components/schemas/NamespaceMetadataTransactionBodyDTO'
     MosaicFlagsEnum:
       type: integer
-      format: int32
       description: |
         - 0x00 (none) - No flags present.
         - 0x01 (supplyMutable) - Mosaic supports supply changes even when mosaic owner owns partial supply.
@@ -2988,7 +2995,6 @@ components:
         - 0x04 (restrictable) - Mosaic supports custom restrictions configured by mosaic owner.
     MosaicSupplyChangeActionEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -3022,14 +3028,12 @@ components:
           $ref: '#/components/schemas/BlockDuration'
         nonce:
           type: integer
-          format: int64
           description: Random nonce used to generate the mosaic id.
           example: 0
         flags:
           $ref: '#/components/schemas/MosaicFlagsEnum'
         divisibility:
           type: integer
-          format: uint32
           description: |
             Determines up to what decimal place the mosaic can be divided.
             Divisibility of 3 means that a mosaic can be divided into smallest parts of 0.001 mosaics.
@@ -3065,14 +3069,12 @@ components:
           $ref: '#/components/schemas/Address'
         revision:
           type: integer
-          format: int32
           description: Number of definitions for the same mosaic.
           example: 1
         flags:
           $ref: '#/components/schemas/MosaicFlagsEnum'
         divisibility:
           type: integer
-          format: uint32
           description: |
             Determines up to what decimal place the mosaic can be divided.
             Divisibility of 3 means that a mosaic can be divided into smallest parts of 0.001 mosaics.
@@ -3151,7 +3153,6 @@ components:
       properties:
         level:
           type: integer
-          format: int32
           description: Level of the multisig account.
           example: 0
         multisigEntries:
@@ -3176,14 +3177,12 @@ components:
       properties:
         minRemovalDelta:
           type: integer
-          format: int32
           description: |
             Number of signatures needed to remove a cosignatory.
             If we are modifying an existing multisig account, this indicates the relative change of the minimum cosignatories.
           example: 1
         minApprovalDelta:
           type: integer
-          format: int32
           description: |
             Number of signatures needed to approve a transaction.
             If we are modifying an existing multisig account, this indicates the relative change of the minimum cosignatories.
@@ -3220,13 +3219,11 @@ components:
           $ref: '#/components/schemas/Address'
         minApproval:
           type: integer
-          format: int32
           description: Number of signatures needed to approve a transaction.
           example: 2
         minRemoval:
           description: Number of signatures needed to remove a cosignatory.
           type: integer
-          format: int32
           example: 1
         cosignatoryPublicKeys:
           type: array
@@ -3257,7 +3254,6 @@ components:
           example: '5'
     AliasActionEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -3268,7 +3264,6 @@ components:
       example: 0
     AliasTypeEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -3281,7 +3276,6 @@ components:
       example: 0
     NamespaceRegistrationTypeEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -3430,7 +3424,6 @@ components:
           description: 'If true, the namespace is active.'
         index:
           type: integer
-          format: int32
     NamespaceDTO:
       type: object
       required:
@@ -3448,7 +3441,6 @@ components:
           $ref: '#/components/schemas/NamespaceRegistrationTypeEnum'
         depth:
           type: integer
-          format: int32
           description: Level of the namespace.
           example: 1
         level0:
@@ -3564,7 +3556,6 @@ components:
             $ref: '#/components/schemas/NamespaceInfoDTO'
     ReceiptTypeEnum:
       type: integer
-      format: int32
       enum:
         - 4685
         - 4942
@@ -3681,7 +3672,6 @@ components:
       properties:
         version:
           type: integer
-          format: int32
           description: Version of the receipt.
         type:
           $ref: '#/components/schemas/ReceiptTypeEnum'
@@ -3733,12 +3723,10 @@ components:
       properties:
         primaryId:
           type: integer
-          format: int32
           description: Transaction index within the block.
           example: 1
         secondaryId:
           type: integer
-          format: int32
           description: |
             Transaction index within the aggregate transaction.
             If the transaction is not an inner transaction, then the secondary id is set to 0.
@@ -3792,7 +3780,6 @@ components:
           $ref: '#/components/schemas/TransactionStatementBodyDTO'
     AccountRestrictionFlagsEnum:
       type: integer
-      format: int32
       example: 1
       enum:
         - 1
@@ -3944,7 +3931,6 @@ components:
         - $ref: '#/components/schemas/AccountOperationRestrictionTransactionBodyDTO'
     MosaicRestrictionEntryTypeEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -3953,7 +3939,6 @@ components:
         - 1 - Mosaic global restriction.
     MosaicRestrictionTypeEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
@@ -4133,7 +4118,6 @@ components:
           example: '20'
     MessageTypeEnum:
       type: integer
-      format: int32
       enum:
         - 0
         - 1
