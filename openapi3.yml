@@ -64,136 +64,6 @@ paths:
           $ref: '#/components/responses/InvalidContent'
         '409':
           $ref: '#/components/responses/InvalidArgument'
-  '/account/{accountId}/transactions':
-    get:
-      tags:
-        - Account routes
-      summary: Get confirmed transactions
-      description: Gets an array of transactions for which an account is the sender or receiver.
-      operationId: getAccountConfirmedTransactions
-      parameters:
-        - $ref: '#/components/parameters/accountId'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/transactionIdLimit'
-        - $ref: '#/components/parameters/ordering'
-        - $ref: '#/components/parameters/transactionType'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of confirmed transactions.
-                items:
-                  $ref: '#/components/schemas/TransactionInfoDTO'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/account/{accountId}/transactions/incoming':
-    get:
-      tags:
-        - Account routes
-      summary: Get incoming transactions
-      description: |
-        Gets an array of incoming transactions. A transaction is said to be incoming with respect to an account
-        if the account is the recipient of the transaction.
-      operationId: getAccountIncomingTransactions
-      parameters:
-        - $ref: '#/components/parameters/accountId'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/transactionIdLimit'
-        - $ref: '#/components/parameters/ordering'
-        - $ref: '#/components/parameters/transactionType'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of incoming transactions.
-                items:
-                  $ref: '#/components/schemas/TransactionInfoDTO'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/account/{accountId}/transactions/outgoing':
-    get:
-      tags:
-        - Account routes
-      summary: Get outgoing transactions
-      description: |
-        Gets an array of outgoing transactions. A transaction is said to be outgoing with respect to an account
-        if the account is the sender of the transaction.
-      operationId: getAccountOutgoingTransactions
-      parameters:
-        - $ref: '#/components/parameters/accountId'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/transactionIdLimit'
-        - $ref: '#/components/parameters/ordering'
-        - $ref: '#/components/parameters/transactionType'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of outgoing transactions.
-                items:
-                  $ref: '#/components/schemas/TransactionInfoDTO'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/account/{accountId}/transactions/unconfirmed':
-    get:
-      tags:
-        - Account routes
-      summary: Get unconfirmed transactions
-      description: Gets the array of transactions not included in a block where an account is the sender or receiver.
-      operationId: getAccountUnconfirmedTransactions
-      parameters:
-        - $ref: '#/components/parameters/accountId'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/transactionIdLimit'
-        - $ref: '#/components/parameters/ordering'
-        - $ref: '#/components/parameters/transactionType'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of unconfirmed transactions.
-                items:
-                  $ref: '#/components/schemas/TransactionInfoDTO'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/account/{accountId}/transactions/partial':
-    get:
-      tags:
-        - Account routes
-      summary: Get aggregate bonded transactions information
-      description: |
-        Gets an array of aggregate bonded transactions where the account is the sender or requires to cosign the transaction.
-      operationId: getAccountPartialTransactions
-      parameters:
-        - $ref: '#/components/parameters/accountId'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/transactionIdLimit'
-        - $ref: '#/components/parameters/ordering'
-        - $ref: '#/components/parameters/transactionType'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of aggregate bonded transactions.
-                items:
-                  $ref: '#/components/schemas/TransactionInfoDTO'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
   '/block/{height}':
     get:
       tags:
@@ -234,32 +104,6 @@ paths:
                 description: Array of blocks information.
                 items:
                   $ref: '#/components/schemas/BlockInfoDTO'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/block/{height}/transactions':
-    get:
-      tags:
-        - Block routes
-      summary: Get transactions from a block
-      description: Returns an array of transactions included in a block for a given block height.
-      operationId: getBlockTransactions
-      parameters:
-        - $ref: '#/components/parameters/height'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/transactionIdLimit'
-        - $ref: '#/components/parameters/ordering'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of transactions.
-                items:
-                  $ref: '#/components/schemas/TransactionInfoDTO'
-        '404':
-          $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
   '/block/{height}/transaction/{hash}/merkle':
@@ -488,6 +332,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerInfoDTO'
+  /transactions:
+    get:
+      tags:
+        - Transaction routes
+      summary: Get transactions
+      description: Gets an array of transactions.
+      operationId: searchTransactions
+      parameters:
+        - $ref: '#/components/parameters/address'
+        - $ref: '#/components/parameters/block'
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/pageNumber'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/transactionDirection'
+        - $ref: '#/components/parameters/transactionState'
+        - $ref: '#/components/parameters/order'
+        - $ref: '#/components/parameters/transactionOrderBy'
+        - $ref: '#/components/parameters/transactionType'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionPage'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
   '/transaction/{transactionId}':
     get:
       tags:
@@ -514,7 +385,7 @@ paths:
         - Transaction routes
       summary: Get transactions information
       description: Returns transactions information for a given array of transactionIds.
-      operationId: getTransactions
+      operationId: getTransactionsById
       requestBody:
         $ref: '#/components/requestBodies/transactionIds'
       responses:
@@ -646,7 +517,7 @@ paths:
         - $ref: '#/components/parameters/accountId'
         - $ref: '#/components/parameters/pageSize'
         - $ref: '#/components/parameters/metadataIdLimit'
-        - $ref: '#/components/parameters/ordering'
+        - $ref: '#/components/parameters/order'
       responses:
         '200':
           description: success
@@ -669,7 +540,7 @@ paths:
         - $ref: '#/components/parameters/mosaicId'
         - $ref: '#/components/parameters/pageSize'
         - $ref: '#/components/parameters/metadataIdLimit'
-        - $ref: '#/components/parameters/ordering'
+        - $ref: '#/components/parameters/order'
       responses:
         '200':
           description: success
@@ -692,7 +563,7 @@ paths:
         - $ref: '#/components/parameters/namespaceId'
         - $ref: '#/components/parameters/pageSize'
         - $ref: '#/components/parameters/metadataIdLimit'
-        - $ref: '#/components/parameters/ordering'
+        - $ref: '#/components/parameters/order'
       responses:
         '200':
           description: success
@@ -1298,12 +1169,6 @@ components:
       required: true
       schema:
         type: integer
-    metadataIdLimit:
-      name: id
-      in: query
-      description: Metadata identifier up to which metadata are returned.
-      schema:
-        type: string
     metadataKey:
       name: key
       in: path
@@ -1325,31 +1190,6 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/NamespaceId'
-    namespaceIdLimit:
-      name: id
-      in: query
-      description: Namespace identifier up to which transactions are returned.
-      schema:
-        type: string
-    ordering:
-      name: ordering
-      in: query
-      description: |
-        Ordering criteria:
-        * -id - Descending order by id.
-        * id - Ascending order by id.
-      schema:
-        type: string
-        default: '-id'
-    pageSize:
-      name: pageSize
-      in: query
-      description: Number of transactions to return for each request.
-      schema:
-        type: integer
-        minimum: 10
-        maximum: 100
-        default: 10
     publicKey:
       name: publicKey
       in: path
@@ -1374,16 +1214,82 @@ components:
     transactionId:
       name: transactionId
       in: path
-      description: Transaction identifier or hash.
+      description: Transaction id or hash.
       required: true
       schema:
         type: string
-    transactionIdLimit:
+    address:
+      name: address
+      in: query
+      description: Account address.
+      schema:
+        $ref: '#/components/schemas/AddressBase32'
+    block:
+      name: block
+      in: query
+      description: Block height.
+      schema:
+        $ref: '#/components/schemas/Height'
+    metadataIdLimit:
       name: id
       in: query
-      description: Transaction identifier up to which transactions are returned.
+      description: Metadata identifier up to which metadata are returned.
       schema:
         type: string
+    namespaceIdLimit:
+      name: id
+      in: query
+      description: Namespace identifier up to which transactions are returned.
+      schema:
+        type: string
+    offset:
+      name: offset
+      in: path
+      description: Entry id at which to start pagination.
+      required: true
+      schema:
+        type: string
+    order:
+      name: order
+      in: query
+      schema:
+        $ref: '#/components/schemas/Order'
+    pageNumber:
+      name: pageNumber
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    pageSize:
+      name: pageSize
+      in: query
+      description: Number of transactions to return for each request.
+      schema:
+        type: integer
+        minimum: 10
+        maximum: 100
+        default: 10
+    transactionDirection:
+      name: direction
+      in: query
+      description: Transaction direction.
+      schema:
+        $ref: '#/components/schemas/TransactionDirectionEnum'
+        default: all
+    transactionOrderBy:
+      name: orderBy
+      in: query
+      schema:
+        $ref: '#/components/schemas/TransactionOrderByEnum'
+    transactionState:
+      name: state
+      in: query
+      description: |
+        Transaction state.
+      schema:
+        $ref: '#/components/schemas/TransactionStateTypeEnum'
+        default: confirmed
     transactionType:
       name: type
       in: query
@@ -1445,6 +1351,10 @@ components:
       format: hex
       description: Address expressed in hexadecimal base.
       example: 9081FCCB41F8C8409A9B99E485E0E28D23BD6304EF7215E01A
+    AddressBase32:
+      type: string
+      description: Address encoded using a 32-character set.
+      example: SCUSLPL2PLSOABGEP5U4Z4GZFKDAU7TBO3QT777Z
     Amount:
       type: string
       description: Absolute amount. An amount of 123456789 (absolute) for a mosaic with divisibility 6 means 123.456789 (relative).
@@ -1517,6 +1427,28 @@ components:
       format: hex
       description: Namespace identifier.
       example: 85BBEA6CC462B244
+    Order:
+      type: string
+      enum:
+        - asc
+        - desc
+      default: desc
+    Pagination:
+      type: object
+      required:
+        - pageNumber
+        - pageSize
+        - totalEntries
+        - totalPages
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        totalEntries:
+          type: integer
+        totalPages:
+          type: integer
     PublicKey:
       type: string
       format: hex
@@ -2132,6 +2064,12 @@ components:
           type: integer
           description: Number of accounts created.
           example: 177
+    TransactionDirectionEnum:
+      type: string
+      enum:
+        - all
+        - incoming
+        - outgoing
     TransactionStateTypeEnum:
       type: string
       enum:
@@ -2140,6 +2078,11 @@ components:
         - failed
         - partial
       description: State of the transaction.
+    TransactionOrderByEnum:
+      type: string
+      enum:
+        - id
+      default: id
     TransactionStatusTypeEnum:
       type: string
       enum:
@@ -2554,6 +2497,18 @@ components:
         id:
           type: string
           description: Identifier of the transaction.
+    TransactionPage:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          description: Array of confirmed transactions.
+          items:
+            $ref: '#/components/schemas/TransactionInfoDTO'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     TransactionBodyDTO:
       type: object
       required:
@@ -2573,9 +2528,13 @@ components:
     TransactionInfoDTO:
       type: object
       required:
+        - id
         - meta
         - transaction
       properties:
+        id:
+          type: string
+          description: Identifier of the transaciton
         meta:
           $ref: '#/components/schemas/TransactionMetaDTO'
         transaction:
@@ -2607,7 +2566,6 @@ components:
         - hash
         - merkleComponentHash
         - index
-        - id
       properties:
         height:
           $ref: '#/components/schemas/Height'
@@ -2618,9 +2576,6 @@ components:
         index:
           type: integer
           description: Transaction index within the block.
-        id:
-          type: string
-          description: Identifier of the transaciton
     TransactionStatusDTO:
       type: object
       required:
@@ -4240,9 +4195,7 @@ components:
           type: array
           description: Array of addresses.
           items:
-            type: string
-            description: Address encoded using a 32-character set.
-            example: SCUSLPL2PLSOABGEP5U4Z4GZFKDAU7TBO3QT777Z
+            $ref: '#/components/schemas/AddressBase32'
     cosignature:
       type: object
       properties:
