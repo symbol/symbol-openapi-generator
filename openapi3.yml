@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 0.8.7
+  version: 0.8.9
   title: Catapult REST Endpoints
   description: OpenAPI Specification of catapult-rest 1.0.20.22
   license:
@@ -29,7 +29,7 @@ paths:
       description: Returns the account information.
       operationId: getAccountInfo
       parameters:
-        - $ref: '#/components/parameters/accountId'
+        - $ref: '#/components/parameters/accountIdPath'
       responses:
         '200':
           description: success
@@ -64,6 +64,136 @@ paths:
           $ref: '#/components/responses/InvalidContent'
         '409':
           $ref: '#/components/responses/InvalidArgument'
+  '/account/{accountId}/transactions':
+    get:
+      tags:
+        - Account routes
+      summary: Get confirmed transactions
+      description: Gets an array of transactions for which an account is the sender or receiver.
+      operationId: getAccountConfirmedTransactions
+      parameters:
+        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
+        - $ref: '#/components/parameters/orderingQuery'
+        - $ref: '#/components/parameters/transactionTypeQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of confirmed transactions.
+                items:
+                  $ref: '#/components/schemas/TransactionInfoDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/account/{accountId}/transactions/incoming':
+    get:
+      tags:
+        - Account routes
+      summary: Get incoming transactions
+      description: |
+        Gets an array of incoming transactions. A transaction is said to be incoming with respect to an account
+        if the account is the recipient of the transaction.
+      operationId: getAccountIncomingTransactions
+      parameters:
+        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
+        - $ref: '#/components/parameters/orderingQuery'
+        - $ref: '#/components/parameters/transactionTypeQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of incoming transactions.
+                items:
+                  $ref: '#/components/schemas/TransactionInfoDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/account/{accountId}/transactions/outgoing':
+    get:
+      tags:
+        - Account routes
+      summary: Get outgoing transactions
+      description: |
+        Gets an array of outgoing transactions. A transaction is said to be outgoing with respect to an account
+        if the account is the sender of the transaction.
+      operationId: getAccountOutgoingTransactions
+      parameters:
+        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
+        - $ref: '#/components/parameters/orderingQuery'
+        - $ref: '#/components/parameters/transactionTypeQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of outgoing transactions.
+                items:
+                  $ref: '#/components/schemas/TransactionInfoDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/account/{accountId}/transactions/unconfirmed':
+    get:
+      tags:
+        - Account routes
+      summary: Get unconfirmed transactions
+      description: Gets the array of transactions not included in a block where an account is the sender or receiver.
+      operationId: getAccountUnconfirmedTransactions
+      parameters:
+        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
+        - $ref: '#/components/parameters/orderingQuery'
+        - $ref: '#/components/parameters/transactionTypeQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of unconfirmed transactions.
+                items:
+                  $ref: '#/components/schemas/TransactionInfoDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/account/{accountId}/transactions/partial':
+    get:
+      tags:
+        - Account routes
+      summary: Get aggregate bonded transactions information
+      description: |
+        Gets an array of aggregate bonded transactions where the account is the sender, recipient, or requires to cosign the transaction.
+      operationId: getAccountPartialTransactions
+      parameters:
+        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
+        - $ref: '#/components/parameters/orderingQuery'
+        - $ref: '#/components/parameters/transactionTypeQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of aggregate bonded transactions.
+                items:
+                  $ref: '#/components/schemas/TransactionInfoDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
   '/block/{height}':
     get:
       tags:
@@ -72,7 +202,7 @@ paths:
       description: Gets a block from the chain that has the given height.
       operationId: getBlockByHeight
       parameters:
-        - $ref: '#/components/parameters/height'
+        - $ref: '#/components/parameters/heightPath'
       responses:
         '200':
           description: success
@@ -92,8 +222,8 @@ paths:
       description: Gets up to limit number of blocks after given block height.
       operationId: getBlocksByHeightWithLimit
       parameters:
-        - $ref: '#/components/parameters/height'
-        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/heightPath'
+        - $ref: '#/components/parameters/limitPath'
       responses:
         '200':
           description: success
@@ -104,6 +234,31 @@ paths:
                 description: Array of blocks information.
                 items:
                   $ref: '#/components/schemas/BlockInfoDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/block/{height}/transactions':
+    get:
+      tags:
+        - Block routes
+      summary: Get transactions from a block
+      description: Returns an array of transactions included in a block for a given block height.
+      operationId: getBlockTransactions
+      parameters:
+        - $ref: '#/components/parameters/heightPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of transactions.
+                items:
+                  $ref: '#/components/schemas/TransactionInfoDTO'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
   '/block/{height}/transaction/{hash}/merkle':
@@ -125,8 +280,8 @@ paths:
         block header (block.transactionsHash) to verify if the transaction was included in the block.
       operationId: getMerkleTransaction
       parameters:
-        - $ref: '#/components/parameters/height'
-        - $ref: '#/components/parameters/transactionHash'
+        - $ref: '#/components/parameters/heightPath'
+        - $ref: '#/components/parameters/transactionHashPath'
       responses:
         '200':
           description: success
@@ -332,33 +487,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerInfoDTO'
-  /transactions:
-    get:
-      tags:
-        - Transaction routes
-      summary: Get transactions
-      description: Gets an array of transactions.
-      operationId: searchTransactions
-      parameters:
-        - $ref: '#/components/parameters/address'
-        - $ref: '#/components/parameters/block'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/pageNumber'
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/transactionDirection'
-        - $ref: '#/components/parameters/transactionState'
-        - $ref: '#/components/parameters/order'
-        - $ref: '#/components/parameters/transactionOrderBy'
-        - $ref: '#/components/parameters/transactionType'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionPage'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
   '/transaction/{transactionId}':
     get:
       tags:
@@ -367,7 +495,7 @@ paths:
       description: Returns transaction information given a transactionId or hash.
       operationId: getTransaction
       parameters:
-        - $ref: '#/components/parameters/transactionId'
+        - $ref: '#/components/parameters/transactionIdPath'
       responses:
         '200':
           description: success
@@ -385,7 +513,7 @@ paths:
         - Transaction routes
       summary: Get transactions information
       description: Returns transactions information for a given array of transactionIds.
-      operationId: getTransactionsById
+      operationId: getTransactions
       requestBody:
         $ref: '#/components/requestBodies/transactionIds'
       responses:
@@ -431,7 +559,7 @@ paths:
       description: Returns the transaction status for a given hash.
       operationId: getTransactionStatus
       parameters:
-        - $ref: '#/components/parameters/transactionHash'
+        - $ref: '#/components/parameters/transactionHashPath'
       responses:
         '200':
           description: success
@@ -514,10 +642,10 @@ paths:
       description: Returns the account metadata given an account id.
       operationId: getAccountMetadata
       parameters:
-        - $ref: '#/components/parameters/accountId'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/metadataIdLimit'
-        - $ref: '#/components/parameters/order'
+        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
+        - $ref: '#/components/parameters/orderingQuery'
       responses:
         '200':
           description: success
@@ -537,10 +665,10 @@ paths:
       description: Returns the mosaic metadata given a mosaic id.
       operationId: getMosaicMetadata
       parameters:
-        - $ref: '#/components/parameters/mosaicId'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/metadataIdLimit'
-        - $ref: '#/components/parameters/order'
+        - $ref: '#/components/parameters/mosaicIdPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
+        - $ref: '#/components/parameters/orderingQuery'
       responses:
         '200':
           description: success
@@ -560,10 +688,10 @@ paths:
       description: Returns the namespace metadata given a namespace id.
       operationId: getNamespaceMetadata
       parameters:
-        - $ref: '#/components/parameters/namespaceId'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/metadataIdLimit'
-        - $ref: '#/components/parameters/order'
+        - $ref: '#/components/parameters/namespaceIdPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
+        - $ref: '#/components/parameters/orderingQuery'
       responses:
         '200':
           description: success
@@ -583,8 +711,8 @@ paths:
       description: Returns the account metadata given an account id and a key.
       operationId: getAccountMetadataByKey
       parameters:
-        - $ref: '#/components/parameters/accountId'
-        - $ref: '#/components/parameters/metadataKey'
+        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/metadataKeyPath'
       responses:
         '200':
           description: success
@@ -604,8 +732,8 @@ paths:
       description: Returns the mosaic metadata given a mosaic id and a key.
       operationId: getMosaicMetadataByKey
       parameters:
-        - $ref: '#/components/parameters/mosaicId'
-        - $ref: '#/components/parameters/metadataKey'
+        - $ref: '#/components/parameters/mosaicIdPath'
+        - $ref: '#/components/parameters/metadataKeyPath'
       responses:
         '200':
           description: success
@@ -625,8 +753,8 @@ paths:
       description: Returns the namespace metadata given a namespace id and a key.
       operationId: getNamespaceMetadataByKey
       parameters:
-        - $ref: '#/components/parameters/namespaceId'
-        - $ref: '#/components/parameters/metadataKey'
+        - $ref: '#/components/parameters/namespaceIdPath'
+        - $ref: '#/components/parameters/metadataKeyPath'
       responses:
         '200':
           description: success
@@ -646,9 +774,9 @@ paths:
       description: 'Returns the account metadata given an account id, a key, and a sender.'
       operationId: getAccountMetadataByKeyAndSender
       parameters:
-        - $ref: '#/components/parameters/accountId'
-        - $ref: '#/components/parameters/metadataKey'
-        - $ref: '#/components/parameters/publicKey'
+        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/metadataKeyPath'
+        - $ref: '#/components/parameters/publicKeyPath'
       responses:
         '200':
           description: success
@@ -668,9 +796,9 @@ paths:
       description: 'Returns the mosaic metadata given a mosaic id, a key, and a sender.'
       operationId: getMosaicMetadataByKeyAndSender
       parameters:
-        - $ref: '#/components/parameters/mosaicId'
-        - $ref: '#/components/parameters/metadataKey'
-        - $ref: '#/components/parameters/publicKey'
+        - $ref: '#/components/parameters/mosaicIdPath'
+        - $ref: '#/components/parameters/metadataKeyPath'
+        - $ref: '#/components/parameters/publicKeyPath'
       responses:
         '200':
           description: success
@@ -690,9 +818,9 @@ paths:
       description: 'Returns the namespace metadata given a namespace id, a key, and a sender.'
       operationId: getNamespaceMetadataByKeyAndSender
       parameters:
-        - $ref: '#/components/parameters/namespaceId'
-        - $ref: '#/components/parameters/metadataKey'
-        - $ref: '#/components/parameters/publicKey'
+        - $ref: '#/components/parameters/namespaceIdPath'
+        - $ref: '#/components/parameters/metadataKeyPath'
+        - $ref: '#/components/parameters/publicKeyPath'
       responses:
         '200':
           description: success
@@ -712,7 +840,7 @@ paths:
       description: Gets the mosaic definition for a given mosaic identifier.
       operationId: getMosaic
       parameters:
-        - $ref: '#/components/parameters/mosaicId'
+        - $ref: '#/components/parameters/mosaicIdPath'
       responses:
         '200':
           description: success
@@ -755,7 +883,7 @@ paths:
       description: Gets an array of mosaics created for a given account address.
       operationId: getMosaicsFromAccount
       parameters:
-        - $ref: '#/components/parameters/accountId'
+        - $ref: '#/components/parameters/accountIdPath'
       responses:
         '200':
           description: success
@@ -795,7 +923,7 @@ paths:
       description: Returns the multisig account information.
       operationId: getAccountMultisig
       parameters:
-        - $ref: '#/components/parameters/accountId'
+        - $ref: '#/components/parameters/accountIdPath'
       responses:
         '200':
           description: success
@@ -815,7 +943,7 @@ paths:
       description: Returns the multisig account graph.
       operationId: getAccountMultisigGraph
       parameters:
-        - $ref: '#/components/parameters/accountId'
+        - $ref: '#/components/parameters/accountIdPath'
       responses:
         '200':
           description: success
@@ -837,7 +965,7 @@ paths:
       description: Gets the namespace for a given namespace identifier.
       operationId: getNamespace
       parameters:
-        - $ref: '#/components/parameters/namespaceId'
+        - $ref: '#/components/parameters/namespaceIdPath'
       responses:
         '200':
           description: success
@@ -857,9 +985,9 @@ paths:
       description: Gets an array of namespaces for a given account address.
       operationId: getNamespacesFromAccount
       parameters:
-        - $ref: '#/components/parameters/accountId'
-        - $ref: '#/components/parameters/pageSize'
-        - $ref: '#/components/parameters/namespaceIdLimit'
+        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/idQuery'
       responses:
         '200':
           description: success
@@ -962,7 +1090,7 @@ paths:
       description: Returns the receipts linked to a block.
       operationId: getBlockReceipts
       parameters:
-        - $ref: '#/components/parameters/height'
+        - $ref: '#/components/parameters/heightPath'
       responses:
         '200':
           description: success
@@ -993,8 +1121,8 @@ paths:
         block header (block.receiptsHash) to verify if the statement was linked with the block.
       operationId: getMerkleReceipts
       parameters:
-        - $ref: '#/components/parameters/height'
-        - $ref: '#/components/parameters/receiptHash'
+        - $ref: '#/components/parameters/heightPath'
+        - $ref: '#/components/parameters/receiptHashPath'
       responses:
         '200':
           description: success
@@ -1014,7 +1142,7 @@ paths:
       description: Returns the account restrictions for a given account.
       operationId: getAccountRestrictions
       parameters:
-        - $ref: '#/components/parameters/accountId'
+        - $ref: '#/components/parameters/accountIdPath'
       responses:
         '200':
           description: success
@@ -1057,7 +1185,7 @@ paths:
       description: Get mosaic global restriction.
       operationId: getMosaicGlobalRestriction
       parameters:
-        - $ref: '#/components/parameters/mosaicId'
+        - $ref: '#/components/parameters/mosaicIdPath'
       responses:
         '200':
           description: success
@@ -1076,7 +1204,7 @@ paths:
       description: Get mosaic address restrictions.
       operationId: getMosaicAddressRestrictions
       parameters:
-        - $ref: '#/components/parameters/mosaicId'
+        - $ref: '#/components/parameters/mosaicIdPath'
       requestBody:
         $ref: '#/components/requestBodies/accountIds'
       responses:
@@ -1101,8 +1229,8 @@ paths:
       description: Get mosaic address restriction.
       operationId: getMosaicAddressRestriction
       parameters:
-        - $ref: '#/components/parameters/mosaicId'
-        - $ref: '#/components/parameters/accountId'
+        - $ref: '#/components/parameters/mosaicIdPath'
+        - $ref: '#/components/parameters/accountIdPath'
       responses:
         '200':
           description: success
@@ -1144,14 +1272,14 @@ servers:
   - url: 'http://localhost:3000'
 components:
   parameters:
-    accountId:
+    accountIdPath:
       name: accountId
       in: path
       description: Account public key or address enconded using a 32-character set.
       required: true
       schema:
         type: string
-    height:
+    heightPath:
       name: height
       in: path
       description: |
@@ -1159,7 +1287,7 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/Height'
-    limit:
+    limitPath:
       name: limit
       in: path
       description: |
@@ -1169,128 +1297,84 @@ components:
       required: true
       schema:
         type: integer
-    metadataKey:
+    metadataKeyPath:
       name: key
       in: path
       description: Metadata key.
       required: true
       schema:
         $ref: '#/components/schemas/MetadataKey'
-    mosaicId:
+    mosaicIdPath:
       name: mosaicId
       in: path
       description: Mosaic identifier.
       required: true
       schema:
         $ref: '#/components/schemas/MosaicId'
-    namespaceId:
+    namespaceIdPath:
       name: namespaceId
       in: path
       description: Namespace identifier.
       required: true
       schema:
         $ref: '#/components/schemas/NamespaceId'
-    publicKey:
+    publicKeyPath:
       name: publicKey
       in: path
       description: Account public key.
       required: true
       schema:
         $ref: '#/components/schemas/PublicKey'
-    receiptHash:
+    receiptHashPath:
       name: hash
       in: path
       description: Receipt hash.
       required: true
       schema:
         $ref: '#/components/schemas/Hash256'
-    transactionHash:
+    transactionHashPath:
       name: hash
       in: path
       description: Transaction hash.
       required: true
       schema:
         $ref: '#/components/schemas/Hash256'
-    transactionId:
+    transactionIdPath:
       name: transactionId
       in: path
-      description: Transaction id or hash.
+      description: Transaction identifier or hash.
       required: true
       schema:
         type: string
-    address:
-      name: address
-      in: query
-      description: Account address.
-      schema:
-        $ref: '#/components/schemas/AddressBase32'
-    block:
-      name: block
-      in: query
-      description: Block height.
-      schema:
-        $ref: '#/components/schemas/Height'
-    metadataIdLimit:
+    idQuery:
       name: id
       in: query
-      description: Metadata identifier up to which metadata are returned.
+      description: |
+        Entry id at which to start pagination.
+        If the ordering parameter is set to -id, the elements returned precede the identifier.
+        Otherwise, newer elements with respect to the id are returned.
       schema:
         type: string
-    namespaceIdLimit:
-      name: id
+    orderingQuery:
+      name: ordering
       in: query
-      description: Namespace identifier up to which transactions are returned.
+      description: |
+        Ordering criteria:
+        * -id - Descending order by id.
+        * id - Ascending order by id.
       schema:
         type: string
-    offset:
-      name: offset
-      in: path
-      description: Entry id at which to start pagination.
-      required: true
-      schema:
-        type: string
-    order:
-      name: order
-      in: query
-      schema:
-        $ref: '#/components/schemas/Order'
-    pageNumber:
-      name: pageNumber
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    pageSize:
+        default: '-id'
+    pageSizeQuery:
       name: pageSize
       in: query
-      description: Number of transactions to return for each request.
+      description: Number of entries to return.
       schema:
         type: integer
         minimum: 10
         maximum: 100
         default: 10
-    transactionDirection:
-      name: direction
-      in: query
-      description: Transaction direction.
-      schema:
-        $ref: '#/components/schemas/TransactionDirectionEnum'
-        default: all
-    transactionOrderBy:
-      name: orderBy
-      in: query
-      schema:
-        $ref: '#/components/schemas/TransactionOrderByEnum'
-    transactionState:
-      name: state
-      in: query
-      description: |
-        Transaction state.
-      schema:
-        $ref: '#/components/schemas/TransactionStateTypeEnum'
-        default: confirmed
-    transactionType:
+    transactionTypeQuery:
       name: type
       in: query
       description: |
@@ -1351,10 +1435,6 @@ components:
       format: hex
       description: Address expressed in hexadecimal base.
       example: 9081FCCB41F8C8409A9B99E485E0E28D23BD6304EF7215E01A
-    AddressBase32:
-      type: string
-      description: Address encoded using a 32-character set.
-      example: SCUSLPL2PLSOABGEP5U4Z4GZFKDAU7TBO3QT777Z
     Amount:
       type: string
       description: Absolute amount. An amount of 123456789 (absolute) for a mosaic with divisibility 6 means 123.456789 (relative).
@@ -1427,28 +1507,6 @@ components:
       format: hex
       description: Namespace identifier.
       example: 85BBEA6CC462B244
-    Order:
-      type: string
-      enum:
-        - asc
-        - desc
-      default: desc
-    Pagination:
-      type: object
-      required:
-        - pageNumber
-        - pageSize
-        - totalEntries
-        - totalPages
-      properties:
-        pageNumber:
-          type: integer
-        pageSize:
-          type: integer
-        totalEntries:
-          type: integer
-        totalPages:
-          type: integer
     PublicKey:
       type: string
       format: hex
@@ -2064,12 +2122,6 @@ components:
           type: integer
           description: Number of accounts created.
           example: 177
-    TransactionDirectionEnum:
-      type: string
-      enum:
-        - all
-        - incoming
-        - outgoing
     TransactionStateTypeEnum:
       type: string
       enum:
@@ -2078,11 +2130,6 @@ components:
         - failed
         - partial
       description: State of the transaction.
-    TransactionOrderByEnum:
-      type: string
-      enum:
-        - id
-      default: id
     TransactionStatusTypeEnum:
       type: string
       enum:
@@ -2497,18 +2544,6 @@ components:
         id:
           type: string
           description: Identifier of the transaction.
-    TransactionPage:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: array
-          description: Array of confirmed transactions.
-          items:
-            $ref: '#/components/schemas/TransactionInfoDTO'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
     TransactionBodyDTO:
       type: object
       required:
@@ -2528,13 +2563,9 @@ components:
     TransactionInfoDTO:
       type: object
       required:
-        - id
         - meta
         - transaction
       properties:
-        id:
-          type: string
-          description: Identifier of the transaciton
         meta:
           $ref: '#/components/schemas/TransactionMetaDTO'
         transaction:
@@ -2566,6 +2597,7 @@ components:
         - hash
         - merkleComponentHash
         - index
+        - id
       properties:
         height:
           $ref: '#/components/schemas/Height'
@@ -2576,6 +2608,9 @@ components:
         index:
           type: integer
           description: Transaction index within the block.
+        id:
+          type: string
+          description: Identifier of the transaciton
     TransactionStatusDTO:
       type: object
       required:
@@ -4195,7 +4230,9 @@ components:
           type: array
           description: Array of addresses.
           items:
-            $ref: '#/components/schemas/AddressBase32'
+            type: string
+            description: Address encoded using a 32-character set.
+            example: SCUSLPL2PLSOABGEP5U4Z4GZFKDAU7TBO3QT777Z
     cosignature:
       type: object
       properties:
