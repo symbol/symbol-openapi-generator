@@ -31,4 +31,4 @@ done
 
 sed -i '/anyOf: ''/d' openapi3-any-of-patch.yml
 
-rm tmp.ym
+rm tmp.yml
