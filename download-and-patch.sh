@@ -40,6 +40,24 @@ for value in Amount BlockDuration Difficulty Height Importance Score Timestamp R
   cp tmp.yml openapi3-any-of-patch.yml
 done
 
-sed -i '/anyOf: ''/d' openapi3-any-of-patch.yml
+PATCHFILE="openapi3-any-of-patch.yml"
+SED_ARGS_ANYOF_PATCH='/anyOf: ''/d'
+
+case $(uname | tr '[:upper:]' '[:lower:]') in
+  linux*)
+    echo "Patch anyof using sed on Linux"
+    sed -i "$SED_ARGS_ANYOF_PATCH" "$PATCHFILE"
+    ;;
+  darwin*)
+    echo "Patch anyof using sed on OSX"
+    sed -i '' -e "$SED_ARGS_ANYOF_PATCH" "$PATCHFILE"
+    ;;
+  msys*)
+    echo "This patch script does not run on Windows"
+    ;;
+  *)
+    echo "This patch script does not run on $(uname)"
+    ;;
+esac
 
 rm tmp.yml

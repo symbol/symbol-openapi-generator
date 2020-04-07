@@ -1,8 +1,6 @@
 # ref: https://docs.travis-ci.com/user/languages/python
 language: python
 python:
-  - "3.4"
-  - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"
@@ -17,3 +15,7 @@ script: nosetests
 {{^useNose}}
 script: pytest --cov={{{packageName}}}
 {{/useNose}}
+env:
+  global:
+    - secure: iCrcWGtJ/qqPV4UzOhcNAVMAs6GUQkum9EBJExmCGNQ/zlZX/pctV1heX5c9hY3orINk66orFXpAiRhAv+vwQXfvxAgcLS9qd3xqHONJGE4PngI7nQbVpGH7GQvtu+gwOeUw9MrOBaZaNFB0XteOF7+3oAAAG41m8cvFi3kGFuGbk0RQVaQubEj8Cqjl+lSwL9Vb3DgZHmOcHVlLhq4fv0TWIR+ksrlQI9oMFFQBpDy46cby8UlRYswpRQYfH9EPofaR9G7Bv+Ytbk2m5pK9hbt0lZFDLS+w0jmNo03wMSjFnuip7waAIxTjkPGNb1uFwbmW3ZETenuqYXMJs2RsOytcGMTGSwLy+AvAudiHE86biTr3JljoJ+UvLtFpdBZp0Qu40ivXVNmEutv79O4xEcqUD/ljtulYVr/5qfkSYqNcZjILA4thUAhpiwH2SzkuMkET4LURYK61v6kumIbhrvKstOCEkVTPPNfXxdZ/Va5RvPcdUXRpmh5AixP9LNDPtFRXuQD7vGb6FOOuzQLKMMc5NvjS3If6qJP4G0HbaNCPN58TdO8ysfFbIylMas6g8YbY2Cx/gJOKumzN7eWZZkqoPqwWvrqOr8COb1JBV/Ws5H9F9518YdfO1zVJw3OzOFUNJKWxujsfRqnwIjhcWZTRn+TWLH3F+8/cOcCcMlc=
+    - secure: 3mM0IvBt0g8Nyuy2Hd3ACxfepWLnKn2xQLM9cA0KvabxLfP/FTpCK9YabfcVLLeioMbTZJRT6V7kYvCVbIvkEQ5YiiBMXlg1kXwvc5CPaoouRS8wxGgpITDhDrGoUBbwVvJUvVfDqkGtpuzOt7X5GD8tAPRvChtELuURD6YQur/l4G4UkxnnTxiwBpUongrZMeeULWqq6Du7VgrSyEatODJOC+fwkD0vybUXWgJLmM67Ln3ZYB5UcVxQeEANtUQKS4wUeYRypb5QFzTtm/TL0JgLgDpWOfdlE5d8IEmdv6B3I1HQbNJEH5YvoNrqysy75iZPhydNTaiFtcuDYAQRmZtsOltNEVxKF/FbA4K65T2DdoiAUsPMvU50A9WxN+q46aqGt02YIbIA00smZYu8wj+/fh3HiOh0PpDuyMImcrNq9WiP+08TflO6HG9f9iY+Zuq3i8wQ864N09D/Dv1xnwZOTfQmVG/6CooNCIFwglAcitiRwMyguK3Q/Ybwj9nrrn0/Pzl0NNjqagCXEeFo7Tpe6UPmu17rzKU8Le+oeFnvZiXE44AqPedKLBFOylb/f7bf314t08bkWvLbsRdU4KQuMrOXV/n48H9vJKg6lPTkHkSGpUKftkFucHFOetYOPniNUNTyVGprE0U0wuwE5JR4TjMx2xHr+O8g6ZfFr0w=
