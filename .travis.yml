@@ -20,7 +20,7 @@ env:
   - GEN_LIBRARY=python
 install:
   - npm install @openapitools/openapi-generator-cli@cli-4.2.3 yaml-cli@1.1.8  -g
-  - pip3 install setuptools pyyaml twine
+  - pip install setuptools pyyaml twine
 script:
   - bash download-and-patch.sh
   - bash generate.sh $GEN_LIBRARY build
