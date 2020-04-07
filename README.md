@@ -25,15 +25,18 @@ See possible options for languages and flavours [here](https://openapi-generator
 
 Once you have installed the dependencies, run:
 ~~~~
-npm install @openapitools/openapi-generator-cli@cli-4.1.0 -g
-./generate.sh all build
+npm install @openapitools/openapi-generator-cli@cli-4.2.3 yaml-cli@1.1.8  -g
+bash download-and-patch.sh
+bash generate.sh all
 ~~~~
 
 The script will:
 
-1. Generate one library per language / template / framework.
-2. Build each library.
-3. Build and install libraries using NPM and Gradle.
+1. Download the released openapi3.yml from [symbol-openapi](https://github.com/nemtech/symbol-openapi/releases) of the current version (version.txt).
+2. Create a patched version of the open api specification (see notes below).
+3. Generate one library per language / template / framework.
+4. Build each library.
+5. Build and install libraries using NPM and Gradle.
 
 ## Notes for SDKs developers
 

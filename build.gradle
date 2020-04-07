@@ -45,7 +45,7 @@ def signingSecretKeyRingFile = getPropertyValue('signingSecretKeyRingFile')
 def signingKeyId = getPropertyValue('signingKeyId')
 def signingPassword = getPropertyValue('signingPassword')
 
-def githubToken = getPropertyValue('GRGIT_USER')
+def githubToken = getPropertyValue('GITHUB_TOKEN')
 def repoPath = getPropertyValue('TRAVIS_REPO_SLUG', 'nemtech/symbol-openapi-generator')
 
 allprojects {
@@ -87,6 +87,7 @@ subprojects {
 
     dependencies {
         compile 'javax.annotation:javax.annotation-api:1.3.2'
+        compile 'org.openapitools:jackson-databind-nullable:0.2.1'
 
     }
 
