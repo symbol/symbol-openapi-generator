@@ -2,10 +2,7 @@ dist: trusty
 language: java
 jdk: oraclejdk8
 node_js: 8
-addons:
-  apt:
-    packages:
-      - python3.5
+python: 3.6
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -20,7 +17,10 @@ env:
   - GEN_LIBRARY=python
 install:
   - npm install @openapitools/openapi-generator-cli@cli-4.2.3 yaml-cli@1.1.8  -g
-  - pip install setuptools pyyaml twine
+  - pip3 install --upgrade pip
+  - pip3 install -r requirements.txt
+  - pip3 install -r test-requirements.txt
+  - pip3 install pyyaml twine
 script:
   - bash download-and-patch.sh
   - bash generate.sh $GEN_LIBRARY build
