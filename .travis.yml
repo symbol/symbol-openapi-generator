@@ -5,8 +5,8 @@ node_js: 8
 addons:
   apt:
     packages:
-      - python3
-      - python3-pip
+      - python3.6
+      - python3.6-pip
 python: 3.6
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -22,9 +22,9 @@ env:
   - GEN_LIBRARY=python
 install:
   - npm install @openapitools/openapi-generator-cli@cli-4.2.3 yaml-cli@1.1.8  -g
-  - pip3 install -r requirements.txt
-  - pip3 install -r test-requirements.txt
-  - pip3 install pyyaml twine
+  - sudo pip3 install -r requirements.txt
+  - sudo pip3 install -r test-requirements.txt
+  - sudo pip3 install pyyaml twine
 script:
   - bash download-and-patch.sh
   - bash generate.sh $GEN_LIBRARY build
