@@ -2,5 +2,5 @@
 /.idea/
 /target/
 /build/
-*.yml
 .project
+/openapi3-any-of-patch.yml

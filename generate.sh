@@ -40,7 +40,8 @@ TRAVIS_REPO_SLUG="${TRAVIS_REPO_SLUG:-nemtech/symbol-openapi-generator}"
 
 GIT_USER_ID="$(cut -d'/' -f1 <<<"$TRAVIS_REPO_SLUG")"
 GIT_REPO_ID="$(cut -d'/' -f2 <<<"$TRAVIS_REPO_SLUG")"
-INPUT="openapi3-any-of-patch.yml"
+INPUT_PATCHED="openapi3-any-of-patch.yml"
+INPUT="openapi3.yml"
 BUILD_DIR="./build"
 
 echo "Operation: $OPERATION_ARG"
@@ -95,7 +96,7 @@ generateJava() {
   openapi-generator generate -g java \
     -o "$BUILD_DIR/$ARTIFACT_ID" \
     -t "java-templates/" \
-    -i "$INPUT" \
+    -i "$INPUT_PATCHED" \
     --additional-properties="apiPackage=io.nem.symbol.sdk.openapi.$LIBRARY.api" \
     --additional-properties="invokerPackage=io.nem.symbol.sdk.openapi.$LIBRARY.invoker" \
     --additional-properties="modelPackage=io.nem.symbol.sdk.openapi.$LIBRARY.model" \

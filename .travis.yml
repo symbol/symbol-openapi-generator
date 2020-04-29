@@ -15,7 +15,8 @@ env:
   - GEN_LIBRARY=java
 install: npm install @openapitools/openapi-generator-cli@cli-4.2.3 yaml-cli@1.1.8  -g
 script:
-  - bash download-and-patch.sh
+#  - bash download.sh
+  - bash patch.sh
   - bash generate.sh $GEN_LIBRARY build
 deploy:
   - provider: script
