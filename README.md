@@ -1,6 +1,6 @@
-# [symbol-openapi-generator](https://github.com/nemtech/symbol-openapi-generator)
+# symbol-openapi-generator
 
-[![Build Status](https://travis-ci.org/nemtech/symbol-openapi-generator.svg?branch=master)](https://travis-ci.org/nemtech/symbol-openapi-generator)
+[![Build Status](https://travis-ci.com/nemtech/symbol-openapi-generator.svg?branch=master)](https://travis-ci.com/nemtech/symbol-openapi-generator)
 
 Project in charge of generating the API client libraries used by the Symbol SDKs.
 
