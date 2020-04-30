@@ -19,7 +19,6 @@ if [ "$1" == "-h" ]; then
 fi
 LIBRARY_ARG="$1"
 OPERATION_ARG="$2"
-OPERATION_ARG2="$3"
 
 arg1Values=['all','java','jersey2','vertx','okhttp-gson','typescript-node','python']
 
@@ -149,21 +148,20 @@ generateJavascript() {
 generatePython() {
   LIBRARY="$1"
   OPERATION="$2"
-  OPERATION2="$3"  # optional arg can be set to 'test' to publish to TestPyPI (instead of PyPI).
   ARTIFACT_ID="symbol-openapi-$LIBRARY-client"
   PACKAGE_NAME="symbol_openapi_client"
   LICENSE_INFO="Apache-2.0"
   INFO_NAME="nemtech"
   INFO_EMAIL="ravi@nem.foundation"
-  # Prereleases and snapshots must be PEP 440 to upload to PyPI.
+  # Prerelease and snapshot must follow PEP 440 to upload to PyPI.
   PRERELEASE_VERSION="a1"
   SNAPSHOT_DATETIME=".$(date -u +'%Y%m%d.%H%M%S')"                        # UTC time for snapshots
   # Set the full package version
   PACKAGE_VERSION="${VERSION}${SNAPSHOT_DATETIME}${PRERELEASE_VERSION}"   # snapshot version
   if [[ $OPERATION == "publish" ]]; then
-    PACKAGE_VERSION="${VERSION}${PRERELEASE_VERSION}" # prerelease version
+    PACKAGE_VERSION="${VERSION}${PRERELEASE_VERSION}"                     # prerelease version
   elif [[ $OPERATION == "release" ]]; then
-    PACKAGE_VERSION="${VERSION}"                      # release version
+    PACKAGE_VERSION="${VERSION}"                                          # release version
   fi
 
   # Patch openapi yaml for python test generator
@@ -189,7 +187,7 @@ generatePython() {
     --additional-properties="snapshot=$SNAPSHOT" \
     --type-mappings=x-number-string=int
   # Build, test, publish/release
-  buildPython "$BUILD_DIR" "$ARTIFACT_ID" "$PACKAGE_VERSION" "$OPERATION" "$OPERATION2"
+  buildPython "$BUILD_DIR" "$ARTIFACT_ID" "$PACKAGE_VERSION" "$OPERATION"
   rm $PY_INPUT
   return 0
 }
@@ -199,7 +197,6 @@ buildPython() {
   ARTIFACT_ID="$2"
   PACKAGE_VERSION="$3"
   OPERATION="$4"
-  OPERATION2="$5"
 
   # Go to artifact build dir
   ORIGINAL_DIR="$(pwd)"  # we'll return to this directory after the build
@@ -222,17 +219,19 @@ buildPython() {
 #  PYTHONPATH=".:${PYTHONPATH}" python3 -m pytest -v --color=yes --showlocals --maxfail=100
 
   # Publish/Release
-  REPO="pypi"   # default repo
   UPLOAD=false   # default to disable upload to artifact repo
-  if [[ -n $OPERATION ]]; then
+  if [[ $OPERATION == "publish" ]]|| [[ $OPERATION == "release" ]]; then
     UPLOAD=true
+    REPO="pypi"
+    echo "Enabled upload to $REPO"
   fi
-  if [[ -n ${TEST_PYPI_USER} ]] && [[ -n ${TEST_PYPI_PASS} ]]; then
+  if [[ $OPERATION == "test" ]] || { [[ -n ${TEST_PYPI_USER} ]] && [[ -n ${TEST_PYPI_PASS} ]]; }; then
+    UPLOAD=true
     REPO="testpypi"
     REPO_URL="https://test.pypi.org/legacy/"
-    UPLOAD=true
+    echo "Enabled upload to $REPO url $REPO_URL"
   fi
-  echo "UPLOAD=$UPLOAD"
+
   if [[ $UPLOAD == true ]]; then
     # Log intention
     if [[ $OPERATION == "release" ]]; then
@@ -252,13 +251,13 @@ buildPython() {
       if [[ -n ${TEST_PYPI_USER} ]] && [[ -n ${TEST_PYPI_PASS} ]]; then
         echo "TEST_PYPI_USER and TEST_PYPI_PASS already set: Uploading to Test PyPI"
         PYTHONPATH=".:${PYTHONPATH}" python3 -m twine upload --repository-url "$REPO_URL" -u "$TEST_PYPI_USER" -p "$TEST_PYPI_PASS" dist/*
-      else
-        echo "TEST_PYPI_USER and/or TEST_PYPI_PASS not set: Initiated manual upload"
+      elif [[ $OPERATION == "test" ]]; then
+        echo "OPERATION=test -> Initiate manual upload"
         PYTHONPATH=".:${PYTHONPATH}" python3 -m twine upload --repository "$REPO" dist/*
       fi
     fi
   else
-    echo "ARTIFACT_ID='$ARTIFACT_ID' PACKAGE_VERSION='$PACKAGE_VERSION' REPO='$REPO'"
+    echo "REPO=${REPO:-N/A} ARTIFACT_ID=$ARTIFACT_ID PACKAGE_VERSION=$PACKAGE_VERSION"
   fi
 
   cd "$ORIGINAL_DIR"  # return to original directory
@@ -271,7 +270,7 @@ if [[ $LIBRARY_ARG == "all" ]]; then
   generateJava "okhttp-gson" "build"
   buildJava "$OPERATION_ARG" "build"
   generateJavascript "typescript-node" "$OPERATION_ARG"
-  generatePython "python" "$OPERATION_ARG" "$OPERATION_ARG2"
+  generatePython "python" "$OPERATION_ARG"
 fi
 
 if [[ $LIBRARY_ARG == "java" ]]; then
@@ -299,5 +298,5 @@ if [[ $LIBRARY_ARG == "typescript-node" ]]; then
 fi
 
 if [[ $LIBRARY_ARG == "python" ]]; then
-  generatePython "$LIBRARY_ARG" "$OPERATION_ARG" "$OPERATION_ARG2"
+  generatePython "$LIBRARY_ARG" "$OPERATION_ARG"
 fi
