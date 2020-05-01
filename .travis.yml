@@ -2,6 +2,11 @@ dist: trusty
 language: java
 jdk: oraclejdk8
 node_js: 8
+addons:
+  apt:
+    packages:
+      - python3.5
+python: 3.5
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -13,15 +18,26 @@ cache:
 env:
   - GEN_LIBRARY=typescript-node
   - GEN_LIBRARY=java
-install: npm install @openapitools/openapi-generator-cli@cli-4.2.3 yaml-cli@1.1.8  -g
+  - GEN_LIBRARY=python
+install:
+  - npm install @openapitools/openapi-generator-cli@cli-4.2.3 yaml-cli@1.1.8  -g
+  - pyenv install --list
+  - pyenv global 3.6.3
+  - pip3 install --upgrade pip
+  - pip3 install -r requirements.txt
+  - pip3 install -r test-requirements.txt
+  - pip3 install pytest pyyaml twine wheel
+before_script:
+  - pyenv --version ; pyenv versions
+  - python --version ; python3 --version ; python3.5 --version
+  - pip3 --version ; pip3 list
 script:
   - bash download-and-patch.sh
   - bash generate.sh $GEN_LIBRARY build
 deploy:
   - provider: script
     skip_cleanup: true
-    script:
-      - bash generate.sh $GEN_LIBRARY publish
+    script: bash generate.sh $GEN_LIBRARY publish
     on:
       branch: master
   - provider: script
@@ -43,3 +59,4 @@ before_install:
       echo "Signing artifacts"
       openssl aes-256-cbc -K $encrypted_bb47ec883ff6_key -iv $encrypted_bb47ec883ff6_iv -in symbol-sdk-java.gpg.enc -out symbol-sdk-java.gpg -d
     fi
+  - pyenv versions ; python --version ; python3 --version ; python3.5 --version
