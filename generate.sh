@@ -166,7 +166,7 @@ generatePython() {
   fi
 
   # Patch openapi yaml for python test generator
-  PY_INPUT=openapi3-python-patch.yml
+  PY_INPUT=$INPUT_PATCHED
   cp $INPUT $PY_INPUT
   echo "python_openapi3_patch.sh $PY_INPUT $INPUT"
   bash python_openapi3_patch.sh $PY_INPUT $INPUT
