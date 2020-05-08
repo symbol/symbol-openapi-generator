@@ -7,12 +7,13 @@ Project in charge of generating the API client libraries used by the Symbol SDKs
 The ``generate`` script creates different flavours of clients according to the [current OpenAPI specification](https://github.com/nemtech/symbol-openapi).
 
 ## Supported languages
-| Language   | Template          | 
+| Language   | Template         | 
 |------------|------------------|
 | Typescript | typescript-node  |
 | Java       | vertx            |
 |            | jersey2          |
 |            | okhttp-gson      |
+| Python     | python           |
 
 See possible options for languages and flavours [here](https://openapi-generator.tech/docs/generators/).
 
@@ -36,7 +37,7 @@ The script will:
 2. Create a patched version of the open api specification (see notes below).
 3. Generate one library per language / template / framework.
 4. Build each library.
-5. Build and install libraries using NPM and Gradle.
+5. Build and install libraries using PyPI, NPM and Gradle.
 
 ## Notes for SDKs developers
 
