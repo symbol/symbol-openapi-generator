@@ -1602,9 +1602,7 @@ components:
         - publicKey
         - publicKeyHeight
         - accountType
-        - linkedPublicKey
-        - vrfPublicKey
-        - votingPublicKey
+        - supplementalAccountKeys
         - activityBuckets
         - mosaics
         - importance
@@ -1620,12 +1618,10 @@ components:
           $ref: '#/components/schemas/Height'
         accountType:
           $ref: '#/components/schemas/AccountTypeEnum'
-        linkedPublicKey:
-          $ref: '#/components/schemas/PublicKey'
-        vrfPublicKey:
-          $ref: '#/components/schemas/PublicKey'
-        votingPublicKey:
-          $ref: '#/components/schemas/VotingKey'
+        supplementalAccountKeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountKeyDTO'
         activityBuckets:
           type: array
           items:
@@ -1669,6 +1665,33 @@ components:
         rawScore:
           $ref: '#/components/schemas/Importance'
           description: Importance score for this bucket. This is taken into account to calculate the latest account importance.
+    AccountKeyDTO:
+      type: object
+      required:
+        - keyType
+        - key
+      properties:
+        keyType:
+          $ref: '#/components/schemas/KeyTypeEnum'
+        key:
+          type: string
+    KeyTypeEnum:
+      type: integer
+      enum:
+        - 0
+        - 1
+        - 2
+        - 4
+        - 8
+        - 15
+      description: |
+        Type of account key:
+        * 0 - Unset.
+        * 1 - Linked.
+        * 2 - VRF.
+        * 4 - Voting.
+        * 8 - Node.
+        * 15 - All.
     PositionEnum:
       type: string
       enum:
@@ -1912,11 +1935,15 @@ components:
         blockGenerationTargetTime:
           type: string
           description: Targeted time between blocks.
-          example: 15s
+          example: 30s
         blockTimeSmoothingFactor:
           type: string
           description: A higher value makes the network more biased.
           example: '3000'
+        blockFinalizationInterval:
+          type: string
+          description: Number of blocks between successive finalization attempts.
+          example: 30
         importanceGrouping:
           type: string
           description: Number of blocks that should be treated as a group for importance purposes.
@@ -1965,10 +1992,22 @@ components:
           type: string
           description: Maximum number of harvesting mosaic atomic units needed for an account to be eligible for harvesting.
           example: 4'000'000
+        minVoterBalance:
+          type: string
+          description: Minimum number of harvesting mosaic atomic units needed for an account to be eligible for voting.
+          example: 50'000
         harvestBeneficiaryPercentage:
           type: string
           description: Percentage of the harvested fee that is collected by the beneficiary account.
           example: '10'
+        harvestNetworkPercentage:
+          type: string
+          description: Percentage of the harvested fee that is collected by the network.
+          example: '5'
+        harvestNetworkFeeSinkPublicKey:
+          type: string
+          description: Public key of the harvest network fee sink account.
+          example: FF5563F1C5824EE0CD868799FBE8744B46D5549973FDA499939C952D951494E4
         blockPruneInterval:
           type: string
           description: Number of blocks between cache pruning.
@@ -2005,9 +2044,9 @@ components:
           $ref: '#/components/schemas/PublicKey'
           description: Nemesis public key.
           example: B4F12E7C9F6946091E2CB8B6D3A12B50D17CCBBF646386EA27CE2946A7423DCF
-        generationHash:
+        generationHashSeed:
           $ref: '#/components/schemas/Hash256'
-          description: Nemesis generation hash.
+          description: Seed for generating Nemesis generation hash.
           example: 57F7DA205008026C776CB6AED843393F04CD458E0AA2D9F1D5F31A402072B2D6
         epochAdjustment:
           type: string
@@ -2018,7 +2057,7 @@ components:
       description: Plugin related configuration properties.
       properties:
         accountlink:
-          $ref: '#/components/schemas/AccountLinkNetworkPropertiesDTO'
+          $ref: '#/components/schemas/AccountKeyLinkNetworkPropertiesDTO'
         aggregate:
           $ref: '#/components/schemas/AggregateNetworkPropertiesDTO'
         lockhash:
@@ -2508,7 +2547,7 @@ components:
         - 16972
       description: |
         Type of transaction:
-        * 0x414C (16716 decimal) - AccountLinkTransaction.
+        * 0x414C (16716 decimal) - AccountKeyLinkTransaction.
         * 0x4141 (16705 decimal) - AggregateCompleteTransaction.
         * 0x4241 (16961 decimal) - AggregateBondedTransaction.
         * 0x414D (16717 decimal) - MosaicDefinitionTransaction.
@@ -2553,7 +2592,7 @@ components:
           $ref: '#/components/schemas/EmbeddedTransactionMetaDTO'
         transaction:
           anyOf:
-            - $ref: '#/components/schemas/EmbeddedAccountLinkTransactionDTO'
+            - $ref: '#/components/schemas/EmbeddedAccountKeyLinkTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedHashLockTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedSecretLockTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedSecretProofTransactionDTO'
@@ -2623,7 +2662,7 @@ components:
           $ref: '#/components/schemas/TransactionMetaDTO'
         transaction:
           anyOf:
-            - $ref: '#/components/schemas/AccountLinkTransactionDTO'
+            - $ref: '#/components/schemas/AccountKeyLinkTransactionDTO'
             - $ref: '#/components/schemas/AggregateTransactionDTO'
             - $ref: '#/components/schemas/HashLockTransactionDTO'
             - $ref: '#/components/schemas/SecretLockTransactionDTO'
@@ -2684,13 +2723,13 @@ components:
           $ref: '#/components/schemas/BlockDuration'
         height:
           $ref: '#/components/schemas/Height'
-    AccountLinkNetworkPropertiesDTO:
+    AccountKeyLinkNetworkPropertiesDTO:
       type: object
       properties:
         dummy:
           type: string
           description: to trigger plugin load
-    AccountLinkTransactionBodyDTO:
+    AccountKeyLinkTransactionBodyDTO:
       type: object
       required:
         - remotePublicKey
@@ -2700,17 +2739,17 @@ components:
           $ref: '#/components/schemas/PublicKey'
         linkAction:
           $ref: '#/components/schemas/LinkActionEnum'
-    AccountLinkTransactionDTO:
+    AccountKeyLinkTransactionDTO:
       type: object
       description: Delegates the account importance score to a proxy account.
       allOf:
         - $ref: '#/components/schemas/TransactionDTO'
-        - $ref: '#/components/schemas/AccountLinkTransactionBodyDTO'
-    EmbeddedAccountLinkTransactionDTO:
+        - $ref: '#/components/schemas/AccountKeyLinkTransactionBodyDTO'
+    EmbeddedAccountKeyLinkTransactionDTO:
       type: object
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
-        - $ref: '#/components/schemas/AccountLinkTransactionBodyDTO'
+        - $ref: '#/components/schemas/AccountKeyLinkTransactionBodyDTO'
     NodeKeyLinkNetworkPropertiesDTO:
       type: object
       properties:
