@@ -20,9 +20,6 @@ replaceXNumberString() {
   cp tmp.yml openapi3-any-of-patch.yml
 }
 
-
-#  TransactionInfoExtendedDTO.properties.transaction
-
 for value in EmbeddedTransactionInfoDTO.properties.transaction \
   TransactionInfoDTO.properties.transaction \
   TransactionStatementBodyDTO.properties.receipts.items \
