@@ -2,7 +2,7 @@ openapi: 3.0.2
 info:
   version: 0.8.12
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.0.20.34
+  description: OpenAPI Specification of catapult-rest 1.0.20.52
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -2620,9 +2620,13 @@ components:
     EmbeddedTransactionInfoDTO:
       type: object
       required:
+        - id
         - meta
         - transaction
       properties:
+        id:
+          type: string
+          description: Internal resource identifier.
         meta:
           $ref: '#/components/schemas/EmbeddedTransactionMetaDTO'
         transaction:
@@ -2656,7 +2660,6 @@ components:
         - aggregateHash
         - aggregateId
         - index
-        - id
       properties:
         height:
           $ref: '#/components/schemas/Height'
@@ -2668,9 +2671,6 @@ components:
         index:
           type: integer
           description: Transaction index within the aggregate.
-        id:
-          type: string
-          description: Identifier of the transaction.
     TransactionPage:
       type: object
       required:
@@ -2712,7 +2712,9 @@ components:
           type: string
           description: Internal resource identifier.
         meta:
-          $ref: '#/components/schemas/TransactionMetaDTO'
+          anyOf:
+            - $ref: '#/components/schemas/TransactionMetaDTO'
+            - $ref: '#/components/schemas/EmbeddedTransactionMetaDTO'
         transaction:
           anyOf:
             - $ref: '#/components/schemas/AccountKeyLinkTransactionDTO'

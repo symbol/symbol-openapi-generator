@@ -22,6 +22,7 @@ replaceXNumberString() {
 
 for value in EmbeddedTransactionInfoDTO.properties.transaction \
   TransactionInfoDTO.properties.transaction \
+  TransactionInfoDTO.properties.meta \
   TransactionStatementBodyDTO.properties.receipts.items \
   AccountRestrictionDTO.properties.values.items; do
   replaceAnyOf $value object
