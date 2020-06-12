@@ -153,15 +153,13 @@ generatePython() {
   PACKAGE_NAME="symbol_openapi_client"
   LICENSE_INFO="Apache-2.0"
   INFO_NAME="nemtech"
-  INFO_EMAIL="ravi@nem.foundation"
+  INFO_EMAIL="contact@nem.foundation"
   # Prerelease and snapshot must follow PEP 440 to upload to PyPI.
   PRERELEASE_VERSION="a1"
   SNAPSHOT_DATETIME=".$(date -u +'%Y%m%d.%H%M%S')"                        # UTC time for snapshots
   # Set the full package version
-  PACKAGE_VERSION="${VERSION}${SNAPSHOT_DATETIME}${PRERELEASE_VERSION}"   # snapshot version
-  if [[ $OPERATION == "publish" ]]; then
-    PACKAGE_VERSION="${VERSION}${PRERELEASE_VERSION}"                     # prerelease version
-  elif [[ $OPERATION == "release" ]]; then
+  PACKAGE_VERSION="${VERSION}${SNAPSHOT_DATETIME}${PRERELEASE_VERSION}"   # alpha publish version
+  if [[ $OPERATION == "release" ]]; then
     PACKAGE_VERSION="${VERSION}"                                          # release version
   fi
 
