@@ -34,7 +34,7 @@ for value in ResolutionEntryDTO.properties.resolved \
   replaceAnyOf $value string
 done
 
-for value in Amount BlockDuration Difficulty Height Importance Score Timestamp RestrictionValue; do
+for value in Amount BlockDuration Difficulty Height Importance Score Timestamp RestrictionValue CosignatureVersion; do
   replaceXNumberString $value
 done
 
