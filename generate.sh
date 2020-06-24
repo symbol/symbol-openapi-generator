@@ -9,7 +9,9 @@ if [ "$1" == "-h" ]; then
   echo "   * jersey2: it generates jersey2 java version"
   echo "   * vertx: it generates vertx java version"
   echo "   * okhttp-gson: it generates okhttp-gson java version"
+  echo "   * typescript: it generates typescript-node and typescript-fetch version"
   echo "   * typescript-node: it generates typescript-node javascript version"
+  echo "   * typescript-fetch: it generates typescript-fetch javascript version"
   echo "   * python: it generates python version"
   echo "[operation] is optional. Possible values: "
   echo "   * no value | unknown value: It generates and builds the libraries."
@@ -20,7 +22,7 @@ fi
 LIBRARY_ARG="$1"
 OPERATION_ARG="$2"
 
-arg1Values=['all','java','jersey2','vertx','okhttp-gson','typescript-node','python']
+arg1Values=['all','java','jersey2','vertx','okhttp-gson','typescript','typescript-node','typescript-fetch','python']
 
 if [[ " ${arg1Values[*]} " != *"$LIBRARY_ARG"* || "" == "$LIBRARY_ARG" ]]; then
   echo "Usage: $(basename $0) [library] [operation]"
@@ -112,7 +114,7 @@ generateJava() {
   return 0
 }
 
-generateJavascript() {
+generateTypescript() {
   LIBRARY="$1"
   OPERATION="$2"
   ARTIFACT_ID="symbol-openapi-$LIBRARY-client"
@@ -125,11 +127,13 @@ generateJavascript() {
     --git-user-id "$GIT_USER_ID" \
     --git-repo-id "$GIT_REPO_ID" \
     --additional-properties="supportsES6=true" \
+    --additional-properties="legacyDiscriminatorBehavior=false" \
     --additional-properties="npmName=$ARTIFACT_ID" \
     --additional-properties=gitUserId=$GIT_USER_ID \
     --additional-properties=gitRepoId=$GIT_REPO_ID \
     --additional-properties="npmVersion=$VERSION" \
     --additional-properties="snapshot=$SNAPSHOT" \
+    --additional-properties="useSingleRequestParameter=false" \
     --type-mappings=x-number-string=string
   cp "$LIBRARY-templates/.npmignore" "$BUILD_DIR/$ARTIFACT_ID"
   cp "$LIBRARY-templates/README.md" "$BUILD_DIR/$ARTIFACT_ID"
@@ -267,8 +271,9 @@ if [[ $LIBRARY_ARG == "all" ]]; then
   generateJava "jersey2" "build"
   generateJava "vertx" "build"
   generateJava "okhttp-gson" "build"
-  buildJava "$OPERATION_ARG" "build"
-  generateJavascript "typescript-node" "$OPERATION_ARG"
+  buildJava "$OPERATION_ARG"
+  generateTypescript "typescript-node" "$OPERATION_ARG"
+  generateTypescript "typescript-fetch" "$OPERATION_ARG"
   generatePython "python" "$OPERATION_ARG"
 fi
 
@@ -292,8 +297,19 @@ if [[ $LIBRARY_ARG == "okhttp-gson" ]]; then
   generateJava "$LIBRARY_ARG" "$OPERATION_ARG"
 fi
 
+if [[ $LIBRARY_ARG == "typescript" ]]; then
+  echo "Generating $LIBRARY_ARG and running operation $OPERATION_ARG"
+  generateTypescript "typescript-node" "$OPERATION_ARG"
+  generateTypescript "typescript-fetch" "$OPERATION_ARG"
+
+fi
+
 if [[ $LIBRARY_ARG == "typescript-node" ]]; then
-  generateJavascript "$LIBRARY_ARG" "$OPERATION_ARG"
+  generateTypescript "$LIBRARY_ARG" "$OPERATION_ARG"
+fi
+
+if [[ $LIBRARY_ARG == "typescript-fetch" ]]; then
+  generateTypescript "$LIBRARY_ARG" "$OPERATION_ARG"
 fi
 
 if [[ $LIBRARY_ARG == "python" ]]; then
