@@ -9,10 +9,9 @@ if [ "$1" == "-h" ]; then
   echo "   * jersey2: it generates jersey2 java version"
   echo "   * vertx: it generates vertx java version"
   echo "   * okhttp-gson: it generates okhttp-gson java version"
-  echo "   * typescript: it generates typescript-node javascript version"
+  echo "   * typescript: it generates typescript-node and typescript-fetch version"
   echo "   * typescript-node: it generates typescript-node javascript version"
   echo "   * typescript-fetch: it generates typescript-fetch javascript version"
-  echo "   * typescript-axios: it generates typescript-axios javascript version"
   echo "   * python: it generates python version"
   echo "[operation] is optional. Possible values: "
   echo "   * no value | unknown value: It generates and builds the libraries."
@@ -134,7 +133,7 @@ generateTypescript() {
     --additional-properties=gitRepoId=$GIT_REPO_ID \
     --additional-properties="npmVersion=$VERSION" \
     --additional-properties="snapshot=$SNAPSHOT" \
-    --additional-properties="useSingleRequestParameter=true" \
+    --additional-properties="useSingleRequestParameter=false" \
     --type-mappings=x-number-string=string
   cp "$LIBRARY-templates/.npmignore" "$BUILD_DIR/$ARTIFACT_ID"
   cp "$LIBRARY-templates/README.md" "$BUILD_DIR/$ARTIFACT_ID"
@@ -272,7 +271,7 @@ if [[ $LIBRARY_ARG == "all" ]]; then
   generateJava "jersey2" "build"
   generateJava "vertx" "build"
   generateJava "okhttp-gson" "build"
-  buildJava "$OPERATION_ARG" "build"
+  buildJava "$OPERATION_ARG"
   generateTypescript "typescript-node" "$OPERATION_ARG"
   generateTypescript "typescript-fetch" "$OPERATION_ARG"
   generatePython "python" "$OPERATION_ARG"

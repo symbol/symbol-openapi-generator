@@ -16,7 +16,7 @@ cache:
     - $HOME/.gradle/wrapper/
     - gradle/wrapper/
 env:
-  - GEN_LIBRARY=typescript-node
+  - GEN_LIBRARY=typescript
   - GEN_LIBRARY=java
   - GEN_LIBRARY=python
 install:
