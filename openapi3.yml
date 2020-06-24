@@ -1480,6 +1480,7 @@ components:
       example: 200
     BlockFeeMultiplier:
       type: integer
+      format: int64
       description: Fee multiplier applied to transactions contained in block.
       example: 0
     CosignatureVersion:
@@ -1490,6 +1491,10 @@ components:
       type: string
       description: 'Determines how hard is to harvest a new block, based on previous blocks.'
       example: 100000000000000
+    FinalizationPoint:
+      type: string
+      description: Finalization point
+      example: '123456'
     Hash256:
       type: string
       format: hex
@@ -1615,7 +1620,7 @@ components:
       type: string
       description: Number of seconds elapsed since the creation of the nemesis block.
       example: 108303181802
-    Uint32:
+    UInt32:
       type: integer
       format: int64
       description: A number that allows uint 32 values.
@@ -1730,7 +1735,7 @@ components:
           $ref: '#/components/schemas/Amount'
           description: Fees paid by the account for this bucket.
         beneficiaryCount:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: Number of times the account has been a beneficiary for this bucket.
         rawScore:
           $ref: '#/components/schemas/Importance'
@@ -1742,26 +1747,22 @@ components:
         - key
       properties:
         keyType:
-          $ref: '#/components/schemas/KeyTypeEnum'
+          $ref: '#/components/schemas/AccountKeyTypeFlagsEnum'
         key:
           type: string
-    KeyTypeEnum:
+    AccountKeyTypeFlagsEnum:
       type: integer
       enum:
         - 0
         - 1
         - 2
         - 4
-        - 8
-        - 15
       description: |
         Type of account key:
         * 0 - Unset.
-        * 1 - Linked.
-        * 2 - VRF.
-        * 4 - Voting.
-        * 8 - Node.
-        * 15 - All.
+        * 1 - Linked account public key.
+        * 2 - Node public key on which remote is allowed to harvest.
+        * 4 - VRF public key.
     BlockOrderByEnum:
       type: string
       enum:
@@ -1983,7 +1984,7 @@ components:
         - size
       properties:
         size:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: Entity size in bytes.
     VerifiableEntityDTO:
       type: object
@@ -3047,10 +3048,16 @@ components:
       type: object
       required:
         - linkedPublicKey
+        - startPoint
+        - endPoint
         - linkAction
       properties:
         linkedPublicKey:
           $ref: '#/components/schemas/VotingKey'
+        startPoint:
+          $ref: '#/components/schemas/FinalizationPoint'
+        endPoint:
+          $ref: '#/components/schemas/FinalizationPoint'
         linkAction:
           $ref: '#/components/schemas/LinkActionEnum'
     VotingKeyLinkTransactionDTO:
@@ -3143,13 +3150,15 @@ components:
     SecretLockTransactionBodyDTO:
       type: object
       required:
+        - recipientAddress
         - secret
         - mosaicId
         - amount
         - duration
         - hashAlgorithm
-        - recipientAddress
       properties:
+        recipientAddress:
+          $ref: '#/components/schemas/UnresolvedAddress'
         secret:
           $ref: '#/components/schemas/Hash256'
         mosaicId:
@@ -3160,8 +3169,6 @@ components:
           $ref: '#/components/schemas/BlockDuration'
         hashAlgorithm:
           $ref: '#/components/schemas/LockHashAlgorithmEnum'
-        recipientAddress:
-          $ref: '#/components/schemas/UnresolvedAddress'
     SecretLockTransactionDTO:
       type: object
       description: 'Transaction to sends mosaics to a recipient if the proof used is revealed. If the duration is reached, the locked funds go back to the sender of the transaction.'
@@ -3171,17 +3178,17 @@ components:
     SecretProofTransactionBodyDTO:
       type: object
       required:
+        - recipientAddress
         - secret
         - hashAlgorithm
-        - recipientAddress
         - proof
       properties:
+        recipientAddress:
+          $ref: '#/components/schemas/UnresolvedAddress'
         secret:
           $ref: '#/components/schemas/Hash256'
         hashAlgorithm:
           $ref: '#/components/schemas/LockHashAlgorithmEnum'
-        recipientAddress:
-          $ref: '#/components/schemas/UnresolvedAddress'
         proof:
           type: string
           description: Original random set of bytes.
@@ -3219,7 +3226,7 @@ components:
           type: integer
           description: Change in value size in bytes.
         valueSize:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: Value size in bytes.
         value:
           $ref: '#/components/schemas/MetadataValue'
@@ -3319,7 +3326,7 @@ components:
           type: integer
           description: Change in value size in bytes.
         valueSize:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: Value size in bytes.
         value:
           $ref: '#/components/schemas/MetadataValue'
@@ -3349,7 +3356,7 @@ components:
           type: integer
           description: Change in value size in bytes.
         valueSize:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: Value size in bytes.
         value:
           $ref: '#/components/schemas/MetadataValue'
@@ -3400,7 +3407,7 @@ components:
         duration:
           $ref: '#/components/schemas/BlockDuration'
         nonce:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: Random nonce used to generate the mosaic id.
           example: 0
         flags:
@@ -3438,7 +3445,7 @@ components:
         ownerAddress:
           $ref: '#/components/schemas/Address'
         revision:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: Number of definitions for the same mosaic.
           example: 1
         flags:
@@ -3592,12 +3599,12 @@ components:
         accountAddress:
           $ref: '#/components/schemas/Address'
         minApproval:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: Number of signatures needed to approve a transaction.
           example: 2
         minRemoval:
           description: Number of signatures needed to remove a cosignatory.
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           example: 1
         cosignatoryAddresses:
           type: array
@@ -4096,11 +4103,11 @@ components:
         - secondaryId
       properties:
         primaryId:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: Transaction index within the block.
           example: 1
         secondaryId:
-          $ref: '#/components/schemas/Uint32'
+          $ref: '#/components/schemas/UInt32'
           description: |
             Transaction index within the aggregate transaction.
             If the transaction is not an embedded transaction, then the secondary id is set to 0.
