@@ -1,4 +1,4 @@
-# symbol-sdk-openapi-typescript-node-client
+# symbol-sdk-openapi-typescript-fetch-client
 
 Generated Open API library for [symbol-sdk-typescript-javascript](https://github.com/nemtech/symbol-sdk-typescript-javascript) using [symbol-openapi-generator](https://github.com/nemtech/symbol-openapi-generator). 
 

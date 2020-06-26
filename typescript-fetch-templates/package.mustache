@@ -1,0 +1,27 @@
+{
+  "name": "{{npmName}}",
+  "version": "{{npmVersion}}",
+  "description": "OpenAPI client for {{npmName}}",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/{{gitUserId}}/{{gitRepoId}}.git"
+  },
+  "bugs": {
+    "url": "https://github.com/{{gitUserId}}/{{gitRepoId}}"
+  },
+  "homepage": "https://github.com/{{gitUserId}}/{{gitRepoId}}",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^{{#typescriptThreePlus}}3.6{{/typescriptThreePlus}}{{^typescriptThreePlus}}2.4{{/typescriptThreePlus}}"
+  }{{#npmRepository}},{{/npmRepository}}
+{{#npmRepository}}
+  "publishConfig": {
+    "registry": "{{npmRepository}}"
+  }
+{{/npmRepository}}
+}

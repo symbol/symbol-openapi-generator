@@ -10,6 +10,7 @@ The ``generate`` script creates different flavours of clients according to the [
 | Language   | Template         | 
 |------------|------------------|
 | Typescript | typescript-node  |
+|            | typescript-fetch |
 | Java       | vertx            |
 |            | jersey2          |
 |            | okhttp-gson      |
@@ -26,9 +27,9 @@ See possible options for languages and flavours [here](https://openapi-generator
 
 Once you have installed the dependencies, run:
 ~~~~
-npm install @openapitools/openapi-generator-cli@cli-4.2.3 yaml-cli@1.1.8  -g
+npm install @openapitools/openapi-generator-cli@cli-4.3.1 yaml-cli@1.1.8  -g
 bash download-and-patch.sh
-bash generate.sh all
+bash generate.sh [template]
 ~~~~
 
 The script will:

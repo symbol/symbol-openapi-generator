@@ -1,8 +1,8 @@
 openapi: 3.0.2
 info:
-  version: 0.9.2
+  version: 0.9.3
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.1.0
+  description: OpenAPI Specification of catapult-rest 1.1.2
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -389,8 +389,8 @@ paths:
       tags:
         - Transaction routes
       summary: Get transactions information
-      description: Returns transactions information for a given array of transactionIds.
-      operationId: getTransactionsById
+      description: Returns confirmed transactions information for a given array of transactionIds.
+      operationId: getConfirmedTransactions
       requestBody:
         $ref: '#/components/requestBodies/transactionIds'
       responses:
@@ -452,6 +452,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransactionPage'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+    post:
+      tags:
+        - Transaction routes
+      summary: Get transactions information
+      description: Returns unconfirmed transactions information for a given array of transactionIds.
+      operationId: getUnconfirmedTransactions
+      requestBody:
+        $ref: '#/components/requestBodies/transactionIds'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of transactions information.
+                items:
+                  $ref: '#/components/schemas/TransactionInfoDTO'
+        '400':
+          $ref: '#/components/responses/InvalidContent'
         '409':
           $ref: '#/components/responses/InvalidArgument'
   '/transactions/unconfirmed/{transactionId}':
@@ -559,6 +581,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AnnounceTransactionInfoDTO'
+        '400':
+          $ref: '#/components/responses/InvalidContent'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+    post:
+      tags:
+        - Transaction routes
+      summary: Get transactions information
+      description: Returns partial transactions information for a given array of transactionIds.
+      operationId: getPartialTransactions
+      requestBody:
+        $ref: '#/components/requestBodies/transactionIds'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of transactions information.
+                items:
+                  $ref: '#/components/schemas/TransactionInfoDTO'
         '400':
           $ref: '#/components/responses/InvalidContent'
         '409':
@@ -1480,6 +1524,7 @@ components:
       example: 200
     BlockFeeMultiplier:
       type: integer
+      format: int64
       description: Fee multiplier applied to transactions contained in block.
       example: 0
     CosignatureVersion:
@@ -1490,6 +1535,10 @@ components:
       type: string
       description: 'Determines how hard is to harvest a new block, based on previous blocks.'
       example: 100000000000000
+    FinalizationPoint:
+      type: string
+      description: Finalization point
+      example: '123456'
     Hash256:
       type: string
       format: hex
@@ -1615,6 +1664,11 @@ components:
       type: string
       description: Number of seconds elapsed since the creation of the nemesis block.
       example: 108303181802
+    UInt32:
+      type: integer
+      format: int64
+      description: A number that allows uint 32 values.
+      example: 2222212828
     UnresolvedAddress:
       type: string
       description: |
@@ -1667,7 +1721,7 @@ components:
         - publicKey
         - publicKeyHeight
         - accountType
-        - supplementalAccountKeys
+        - supplementalPublicKeys
         - activityBuckets
         - mosaics
         - importance
@@ -1683,10 +1737,8 @@ components:
           $ref: '#/components/schemas/Height'
         accountType:
           $ref: '#/components/schemas/AccountTypeEnum'
-        supplementalAccountKeys:
-          type: array
-          items:
-            $ref: '#/components/schemas/AccountKeyDTO'
+        supplementalPublicKeys:
+          $ref: '#/components/schemas/SupplementalPublicKeysDTO'
         activityBuckets:
           type: array
           items:
@@ -1725,38 +1777,64 @@ components:
           $ref: '#/components/schemas/Amount'
           description: Fees paid by the account for this bucket.
         beneficiaryCount:
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           description: Number of times the account has been a beneficiary for this bucket.
         rawScore:
           $ref: '#/components/schemas/Importance'
           description: Importance score for this bucket. This is taken into account to calculate the latest account importance.
-    AccountKeyDTO:
+    AccountLinkPublicKeyDTO:
       type: object
       required:
-        - keyType
-        - key
+        - publicKey
       properties:
-        keyType:
-          $ref: '#/components/schemas/KeyTypeEnum'
-        key:
+        publicKey:
           type: string
-    KeyTypeEnum:
+    AccountLinkVotingKeysDTO:
+      type: object
+      required:
+        - publicKeys
+      properties:
+        publicKeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountLinkVotingKeyDTO'
+    AccountLinkVotingKeyDTO:
+      type: object
+      required:
+        - publicKey
+        - startPoint
+        - endPoint
+      properties:
+        publicKey:
+          type: string
+        startPoint:
+          type: string
+        endPoint:
+          type: string
+    SupplementalPublicKeysDTO:
+      type: object
+      properties:
+        linked:
+          $ref: '#/components/schemas/AccountLinkPublicKeyDTO'
+        node:
+          $ref: '#/components/schemas/AccountLinkPublicKeyDTO'
+        vrf:
+          $ref: '#/components/schemas/AccountLinkPublicKeyDTO'
+        voting:
+          $ref: '#/components/schemas/AccountLinkVotingKeysDTO'
+    AccountKeyTypeFlagsEnum:
       type: integer
       enum:
         - 0
         - 1
         - 2
         - 4
-        - 8
-        - 15
       description: |
         Type of account key:
         * 0 - Unset.
-        * 1 - Linked.
-        * 2 - VRF.
-        * 4 - Voting.
-        * 8 - Node.
-        * 15 - All.
+        * 1 - Linked account public key.
+        * 2 - Node public key on which remote is allowed to harvest.
+        * 4 - VRF public key.
     BlockOrderByEnum:
       type: string
       enum:
@@ -1926,11 +2004,11 @@ components:
         - lowestFeeMultiplier
       properties:
         averageFeeMultiplier:
-          type: integer
+          $ref: '#/components/schemas/BlockFeeMultiplier'
           description: Average fee multiplier over the last "numBlocksTransactionFeeStats".
           example: 1
         medianFeeMultiplier:
-          type: integer
+          $ref: '#/components/schemas/BlockFeeMultiplier'
           description: Median fee multiplier over the last "numBlocksTransactionFeeStats".
           example: 1
         highestFeeMultiplier:
@@ -1978,7 +2056,7 @@ components:
         - size
       properties:
         size:
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           description: Entity size in bytes.
     VerifiableEntityDTO:
       type: object
@@ -3042,10 +3120,16 @@ components:
       type: object
       required:
         - linkedPublicKey
+        - startPoint
+        - endPoint
         - linkAction
       properties:
         linkedPublicKey:
           $ref: '#/components/schemas/VotingKey'
+        startPoint:
+          $ref: '#/components/schemas/FinalizationPoint'
+        endPoint:
+          $ref: '#/components/schemas/FinalizationPoint'
         linkAction:
           $ref: '#/components/schemas/LinkActionEnum'
     VotingKeyLinkTransactionDTO:
@@ -3138,13 +3222,15 @@ components:
     SecretLockTransactionBodyDTO:
       type: object
       required:
+        - recipientAddress
         - secret
         - mosaicId
         - amount
         - duration
         - hashAlgorithm
-        - recipientAddress
       properties:
+        recipientAddress:
+          $ref: '#/components/schemas/UnresolvedAddress'
         secret:
           $ref: '#/components/schemas/Hash256'
         mosaicId:
@@ -3155,8 +3241,6 @@ components:
           $ref: '#/components/schemas/BlockDuration'
         hashAlgorithm:
           $ref: '#/components/schemas/LockHashAlgorithmEnum'
-        recipientAddress:
-          $ref: '#/components/schemas/UnresolvedAddress'
     SecretLockTransactionDTO:
       type: object
       description: 'Transaction to sends mosaics to a recipient if the proof used is revealed. If the duration is reached, the locked funds go back to the sender of the transaction.'
@@ -3166,17 +3250,17 @@ components:
     SecretProofTransactionBodyDTO:
       type: object
       required:
+        - recipientAddress
         - secret
         - hashAlgorithm
-        - recipientAddress
         - proof
       properties:
+        recipientAddress:
+          $ref: '#/components/schemas/UnresolvedAddress'
         secret:
           $ref: '#/components/schemas/Hash256'
         hashAlgorithm:
           $ref: '#/components/schemas/LockHashAlgorithmEnum'
-        recipientAddress:
-          $ref: '#/components/schemas/UnresolvedAddress'
         proof:
           type: string
           description: Original random set of bytes.
@@ -3214,7 +3298,7 @@ components:
           type: integer
           description: Change in value size in bytes.
         valueSize:
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           description: Value size in bytes.
         value:
           $ref: '#/components/schemas/MetadataValue'
@@ -3314,7 +3398,7 @@ components:
           type: integer
           description: Change in value size in bytes.
         valueSize:
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           description: Value size in bytes.
         value:
           $ref: '#/components/schemas/MetadataValue'
@@ -3344,7 +3428,7 @@ components:
           type: integer
           description: Change in value size in bytes.
         valueSize:
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           description: Value size in bytes.
         value:
           $ref: '#/components/schemas/MetadataValue'
@@ -3395,8 +3479,7 @@ components:
         duration:
           $ref: '#/components/schemas/BlockDuration'
         nonce:
-          type: integer
-          format: int64
+          $ref: '#/components/schemas/UInt32'
           description: Random nonce used to generate the mosaic id.
           example: 0
         flags:
@@ -3434,7 +3517,7 @@ components:
         ownerAddress:
           $ref: '#/components/schemas/Address'
         revision:
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           description: Number of definitions for the same mosaic.
           example: 1
         flags:
@@ -3588,12 +3671,12 @@ components:
         accountAddress:
           $ref: '#/components/schemas/Address'
         minApproval:
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           description: Number of signatures needed to approve a transaction.
           example: 2
         minRemoval:
           description: Number of signatures needed to remove a cosignatory.
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           example: 1
         cosignatoryAddresses:
           type: array
@@ -4092,11 +4175,11 @@ components:
         - secondaryId
       properties:
         primaryId:
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           description: Transaction index within the block.
           example: 1
         secondaryId:
-          type: integer
+          $ref: '#/components/schemas/UInt32'
           description: |
             Transaction index within the aggregate transaction.
             If the transaction is not an embedded transaction, then the secondary id is set to 0.
