@@ -136,6 +136,7 @@ generateTypescript() {
     --additional-properties="npmVersion=$VERSION" \
     --additional-properties="snapshot=$SNAPSHOT" \
     --additional-properties="useSingleRequestParameter=false" \
+    --additional-properties="typescriptThreePlus=true" \
     --type-mappings=x-number-string=string
   cp "$LIBRARY-templates/.npmignore" "$BUILD_DIR/$ARTIFACT_ID"
   cp "$LIBRARY-templates/README.md" "$BUILD_DIR/$ARTIFACT_ID"
