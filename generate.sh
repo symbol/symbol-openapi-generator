@@ -15,7 +15,7 @@ if [ "$1" == "-h" ]; then
   echo "   * python: it generates python version"
   echo "[operation] is optional. Possible values: "
   echo "   * no value | unknown value: It generates and builds the libraries."
-  echo "   * publish | master: It generates, builds, and publish the libraries and documentation to npm, pypi, maven repos and/or github pages. "
+  echo "   * publish | main: It generates, builds, and publish the libraries and documentation to npm, pypi, maven repos and/or github pages. "
   echo "   * release: It generates, builds, and publish the libraries and documentation to npm, pypi, maven repos and/or github pages updating the version to a release."
   exit 0
 fi
@@ -49,7 +49,7 @@ BUILD_DIR="./build"
 
 echo "Operation: $OPERATION_ARG"
 
-if [[ $OPERATION_ARG == "master" ]]; then
+if [[ $OPERATION_ARG == "main" ]]; then
   OPERATION_ARG="publish"
 fi
 
