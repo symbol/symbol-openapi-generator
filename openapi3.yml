@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 0.9.6
+  version: 0.9.7
   title: Catapult REST Endpoints
   description: OpenAPI Specification of catapult-rest 1.2.0
   license:
@@ -20,6 +20,8 @@ tags:
   - name: Restriction Account routes
   - name: Receipt routes
   - name: Transaction routes
+  - name: Hash Lock routes
+  - name: Secret Lock routes
 paths:
   /accounts:
     get:
@@ -701,6 +703,86 @@ paths:
           $ref: '#/components/responses/InvalidContent'
         '409':
           $ref: '#/components/responses/InvalidArgument'
+  '/account/{address}/lock/hash':
+    get:
+      tags:
+        - Hash Lock routes
+      summary: Search hash lock entries
+      description: Returns an array of hash locks.
+      operationId: searchHashLock
+      parameters:
+        - $ref: '#/components/parameters/address'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/pageNumberQuery'
+        - $ref: '#/components/parameters/offsetQuery'
+        - $ref: '#/components/parameters/orderQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HashLockPage'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/lock/hash/{hash}':
+    get:
+      tags:
+        - Hash Lock routes
+      summary: Get hash lock information
+      description: Gets the hash lock for a given hash.
+      operationId: getHashLock
+      parameters:
+        - $ref: '#/components/parameters/hashPath'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HashLockInfoDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/account/{address}/lock/secret':
+    get:
+      tags:
+        - Secret Lock routes
+      summary: Search secret lock entries
+      description: Returns an array of secret locks.
+      operationId: searchSecretLock
+      parameters:
+        - $ref: '#/components/parameters/address'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/pageNumberQuery'
+        - $ref: '#/components/parameters/offsetQuery'
+        - $ref: '#/components/parameters/orderQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretLockPage'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/lock/secret/{secret}':
+    get:
+      tags:
+        - Secret Lock routes
+      summary: Get secret lock information
+      description: Gets the secret lock for a given secret.
+      operationId: getSecretLock
+      parameters:
+        - $ref: '#/components/parameters/secretPath'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretLockInfoDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
   /metadata:
     get:
       tags:
@@ -1166,10 +1248,17 @@ components:
     accountIdPath:
       name: accountId
       in: path
-      description: Account public key or address enconded using a 32-character set.
+      description: Account public key or address encoded using a 32-character set.
       required: true
       schema:
         type: string
+    hashPath:
+      name: hash
+      in: path
+      description: Filter by hash.
+      required: true
+      schema:
+        $ref: '#/components/schemas/Hash256'
     heightPath:
       name: height
       in: path
@@ -1215,6 +1304,13 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/Hash256'
+    secretPath:
+      name: secret
+      in: path
+      description: Filter by secret.
+      required: true
+      schema:
+        $ref: '#/components/schemas/Secret'
     sourceAddressPath:
       name: sourceAddress
       in: path
@@ -1241,7 +1337,7 @@ components:
       in: query
       description: |
         Filter by address involved in the transaction. 
-        An account's address is consider to be involved in the transaction when the account is the sender, recipient, or it is required to cosign the transaction.
+        An account's address is considered to be involved in the transaction when the account is the sender, recipient, or it is required to cosign the transaction.
         This filter cannot be combined with ``recipientAddress`` and ``signerPublicKey`` query params.
       schema:
         $ref: '#/components/schemas/AddressBase32'
@@ -1274,7 +1370,7 @@ components:
       in: query
       description: |
         When true, the endpoint also returns all the embedded aggregate transactions.
-        Otherwise, only top-level transactions used to calcualate the block transactionsHash are returned.
+        Otherwise, only top-level transactions used to calculate the block transactionsHash are returned.
       schema:
         type: boolean
         default: false
@@ -1599,16 +1695,10 @@ components:
       required:
         - pageNumber
         - pageSize
-        - totalEntries
-        - totalPages
       properties:
         pageNumber:
           type: integer
         pageSize:
-          type: integer
-        totalEntries:
-          type: integer
-        totalPages:
           type: integer
     PublicKey:
       type: string
@@ -1636,6 +1726,16 @@ components:
         Score of the blockchain. During synchronization, nodes try to get the
         blockchain with highest score in the network.
       example: 1683298087010368300
+    Status:
+      type: integer
+      format: integer
+      description: A number that indicates the status.
+      example: 1
+    Secret:
+      type: string
+      format: hex
+      description: Secret.
+      example: FB8558E82C1968A3536CD77ACD7F9BC65E8B8F346714C9F91B42D6C2177BEDC1
     Signature:
       type: string
       description: Entity's signature generated by the signer.
@@ -1770,7 +1870,7 @@ components:
         - rawScore
       description: |
         Supplementary data stored for importance recalculation.
-        At each importance recalculation, existing buckets are shifted, the working bucket is finalized and a new working bucketis created.
+        At each importance recalculation, existing buckets are shifted, the working bucket is finalized and a new working bucket is created.
         Each bucket influences at most five importance recalculations.
       properties:
         startHeight:
@@ -3170,6 +3270,51 @@ components:
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
         - $ref: '#/components/schemas/HashLockTransactionBodyDTO'
+    HashLockEntryDTO:
+      type: object
+      required:
+        - ownerAddress
+        - mosaicId
+        - amount
+        - endHeight
+        - status
+        - hash
+      properties:
+        ownerAddress:
+          $ref: '#/components/schemas/Address'
+        mosaicId:
+          $ref: '#/components/schemas/MosaicId'
+        amount:
+          $ref: '#/components/schemas/Amount'
+        endHeight:
+          $ref: '#/components/schemas/Height'
+        status:
+          $ref: '#/components/schemas/Status'
+        hash:
+          $ref: '#/components/schemas/Hash256'
+    HashLockInfoDTO:
+      type: object
+      required:
+        - id
+        - lock
+      properties:
+        id:
+          type: string
+        lock:
+          $ref: '#/components/schemas/HashLockEntryDTO'
+    HashLockPage:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Array of hash locks.
+          items:
+            $ref: '#/components/schemas/HashLockInfoDTO'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     HashLockTransactionBodyDTO:
       type: object
       required:
@@ -3203,7 +3348,7 @@ components:
           type: string
           description: Maximum number of blocks for which a hash lock can exist.
           example: 2d
-    LockHashAlgorithmEnum:
+    SecretHashAlgorithmEnum.:
       type: integer
       enum:
         - 0
@@ -3224,6 +3369,60 @@ components:
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
         - $ref: '#/components/schemas/SecretProofTransactionBodyDTO'
+    SecretLockEntryDTO:
+      type: object
+      required:
+        - ownerAddress
+        - mosaicId
+        - amount
+        - endHeight
+        - status
+        - hashAlgorithm
+        - secret
+        - recipientAddress
+        - compositeHash
+      properties:
+        ownerAddress:
+          $ref: '#/components/schemas/Address'
+        mosaicId:
+          $ref: '#/components/schemas/MosaicId'
+        amount:
+          $ref: '#/components/schemas/Amount'
+        endHeight:
+          $ref: '#/components/schemas/Height'
+        status:
+          $ref: '#/components/schemas/Status'
+        hashAlgorithm:
+          $ref: '#/components/schemas/SecretHashAlgorithmEnum.'
+        secret:
+          $ref: '#/components/schemas/Secret'
+        recipientAddress:
+          $ref: '#/components/schemas/Address'
+        compositeHash:
+          $ref: '#/components/schemas/Hash256'
+    SecretLockInfoDTO:
+      type: object
+      required:
+        - id
+        - lock
+      properties:
+        id:
+          type: string
+        lock:
+          $ref: '#/components/schemas/SecretLockEntryDTO'
+    SecretLockPage:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Array of secret locks.
+          items:
+            $ref: '#/components/schemas/SecretLockInfoDTO'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     SecretLockNetworkPropertiesDTO:
       type: object
       properties:
@@ -3260,7 +3459,7 @@ components:
         duration:
           $ref: '#/components/schemas/BlockDuration'
         hashAlgorithm:
-          $ref: '#/components/schemas/LockHashAlgorithmEnum'
+          $ref: '#/components/schemas/SecretHashAlgorithmEnum.'
     SecretLockTransactionDTO:
       type: object
       description: 'Transaction to sends mosaics to a recipient if the proof used is revealed. If the duration is reached, the locked funds go back to the sender of the transaction.'
@@ -3280,7 +3479,7 @@ components:
         secret:
           $ref: '#/components/schemas/Hash256'
         hashAlgorithm:
-          $ref: '#/components/schemas/LockHashAlgorithmEnum'
+          $ref: '#/components/schemas/SecretHashAlgorithmEnum.'
         proof:
           type: string
           description: Original random set of bytes.
