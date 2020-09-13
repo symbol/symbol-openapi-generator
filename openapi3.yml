@@ -196,40 +196,28 @@ paths:
           $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
-  /chain/height:
+  /chain/info:
     get:
       tags:
         - Chain routes
-      summary: Get the current height of the chain
-      description: Returns the current height of the blockchain.
-      operationId: getChainHeight
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HeightInfoDTO'
-  /chain/score:
-    get:
-      tags:
-        - Chain routes
-      summary: Get the current score of the chain
+      summary: Get the current information of the chain
       description: |
-        Gets the current score of the blockchain. The higher the score, the better the chain.
+        Returns the current information of the blockchain.
+
+        The higher the score, the better the chain.
         During synchronization, nodes try to get the best blockchain in the network.
 
         The score for a block is derived from its difficulty and the time (in seconds) that has elapsed since the last block:
 
             block score = difficulty − time elapsed since last block
-      operationId: getChainScore
+      operationId: getChainInfo
       responses:
         '200':
           description: success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChainScoreDTO'
+                $ref: '#/components/schemas/ChainInfoDTO'
   /network:
     get:
       tags:
@@ -1100,15 +1088,15 @@ paths:
           $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
-  '/restrictions/account/{accountId}':
+  '/restrictions/account/{address}':
     get:
       tags:
         - Restriction Account routes
       summary: Get the account restrictions
-      description: Returns the account restrictions for a given account.
+      description: Returns the account restrictions for a given address.
       operationId: getAccountRestrictions
       parameters:
-        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/address'
       responses:
         '200':
           description: success
@@ -1120,115 +1108,30 @@ paths:
           $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
-  /restrictions/account:
-    post:
-      tags:
-        - Restriction Account routes
-      summary: Get account restrictions for given array of addresses
-      description: Returns the account restrictions for a given array of addresses.
-      operationId: getAccountRestrictionsFromAccounts
-      requestBody:
-        $ref: '#/components/requestBodies/accountIds'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of account restrictions.
-                items:
-                  $ref: '#/components/schemas/AccountRestrictionsInfoDTO'
-        '400':
-          $ref: '#/components/responses/InvalidContent'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/restrictions/mosaic/{mosaicId}':
-    get:
-      tags:
-        - Restriction Mosaic routes
-      summary: Get mosaic global restriction for a given mosaic identifier.
-      description: Get mosaic global restriction.
-      operationId: getMosaicGlobalRestriction
-      parameters:
-        - $ref: '#/components/parameters/mosaicIdPath'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MosaicGlobalRestrictionDTO'
-        '404':
-          $ref: '#/components/responses/ResourceNotFound'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-    post:
-      tags:
-        - Restriction Mosaic routes
-      summary: Get mosaic address restrictions for a given mosaic and account identifiers array.
-      description: Get mosaic address restrictions.
-      operationId: getMosaicAddressRestrictions
-      parameters:
-        - $ref: '#/components/parameters/mosaicIdPath'
-      requestBody:
-        $ref: '#/components/requestBodies/accountIds'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of mosaics address restrictions.
-                items:
-                  $ref: '#/components/schemas/MosaicAddressRestrictionDTO'
-        '400':
-          $ref: '#/components/responses/InvalidContent'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/restrictions/mosaic/{mosaicId}/address/{address}':
-    get:
-      tags:
-        - Restriction Mosaic routes
-      summary: Get mosaic address restrictions for a given mosaic and account address.
-      description: Get mosaic address restriction.
-      operationId: getMosaicAddressRestriction
-      parameters:
-        - $ref: '#/components/parameters/mosaicIdPath'
-        - $ref: '#/components/parameters/address'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MosaicAddressRestrictionDTO'
-        '404':
-          $ref: '#/components/responses/ResourceNotFound'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
   /restrictions/mosaic:
-    post:
+    get:
       tags:
         - Restriction Mosaic routes
-      summary: Get mosaic global restrictions for an array of mosaics.
-      description: Get mosaic global restrictions.
-      operationId: getMosaicGlobalRestrictions
-      requestBody:
-        $ref: '#/components/requestBodies/mosaicIds'
+      summary: Search mosaic restrictions
+      description: Returns an array of mosaic restrictions.
+      operationId: searchMosaicRestriction
+      parameters:
+        - $ref: '#/components/parameters/mosaicIdQuery'
+        - $ref: '#/components/parameters/entryType'
+        - $ref: '#/components/parameters/targetAddressQuery'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/pageNumberQuery'
+        - $ref: '#/components/parameters/offsetQuery'
+        - $ref: '#/components/parameters/orderQuery'
       responses:
         '200':
           description: success
           content:
             application/json:
               schema:
-                type: array
-                description: Array of mosaics global restrictions.
-                items:
-                  $ref: '#/components/schemas/MosaicGlobalRestrictionDTO'
-        '400':
-          $ref: '#/components/responses/InvalidContent'
+                $ref: '#/components/schemas/MosaicRestrictionsPage'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
 externalDocs:
@@ -1374,6 +1277,12 @@ components:
       schema:
         type: boolean
         default: false
+    entryType:
+      name: entryType
+      in: query
+      description: Filter by entry type.
+      schema:
+        $ref: '#/components/schemas/MosaicRestrictionEntryTypeEnum'
     heightQuery:
       name: height
       in: query
@@ -1611,10 +1520,16 @@ components:
       type: string
       description: 'Determines how hard is to harvest a new block, based on previous blocks.'
       example: 100000000000000
+    FinalizationEpoch:
+      type: integer
+      format: int64
+      description: Finalization Epoch
+      example: 123456
     FinalizationPoint:
-      type: string
+      type: integer
+      format: int64
       description: Finalization point
-      example: '123456'
+      example: 0
     Hash256:
       type: string
       format: hex
@@ -1622,6 +1537,10 @@ components:
     Height:
       type: string
       description: Height of the blockchain.
+      example: 1
+    FinalizedHeight:
+      type: string
+      description: Finalized height of the blockchain.
       example: 1
     Importance:
       type: string
@@ -1904,15 +1823,15 @@ components:
       type: object
       required:
         - publicKey
-        - startPoint
-        - endPoint
+        - startEpoch
+        - endEpoch
       properties:
         publicKey:
           type: string
-        startPoint:
-          type: string
-        endPoint:
-          type: string
+        startEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
+        endEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
     SupplementalPublicKeysDTO:
       type: object
       properties:
@@ -2061,23 +1980,38 @@ components:
           description: List of complementary merkle path items needed to recalculate the merkle root.
           items:
             $ref: '#/components/schemas/MerklePathItemDTO'
-    ChainScoreDTO:
+    ChainInfoDTO:
       type: object
       required:
+        - height
         - scoreHigh
         - scoreLow
+        - latestFinalizedBlock
       properties:
+        height:
+          $ref: '#/components/schemas/Height'
         scoreHigh:
           $ref: '#/components/schemas/Score'
         scoreLow:
           $ref: '#/components/schemas/Score'
-    HeightInfoDTO:
+        latestFinalizedBlock:
+          $ref: '#/components/schemas/FinalizedBlockDTO'
+    FinalizedBlockDTO:
       type: object
       required:
+        - finalizationEpoch
+        - finalizationPoint
         - height
+        - hash
       properties:
+        finalizationEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
+        finalizationPoint:
+          $ref: '#/components/schemas/FinalizationPoint'
         height:
           $ref: '#/components/schemas/Height'
+        hash:
+          $ref: '#/components/schemas/Hash256'
     RentalFeesDTO:
       type: object
       required:
@@ -2377,11 +2311,19 @@ components:
         - 1
         - 2
         - 3
+        - 4
+        - 5
+        - 6
+        - 7
       description: |
         Role of the node:
         * 1 - Peer node.
         * 2 - Api node.
-        * 3 - Dual node.
+        * 3 - Peer Api node.
+        * 4 - Voting node.
+        * 5 - Peer Voting node.
+        * 6 - Api Voting node.
+        * 7 - Peer Api Voting node.
       example: 2
     CommunicationTimestampsDTO:
       type: object
@@ -3240,16 +3182,16 @@ components:
       type: object
       required:
         - linkedPublicKey
-        - startPoint
-        - endPoint
+        - startEpoch
+        - endEpoch
         - linkAction
       properties:
         linkedPublicKey:
           $ref: '#/components/schemas/VotingKey'
-        startPoint:
-          $ref: '#/components/schemas/FinalizationPoint'
-        endPoint:
-          $ref: '#/components/schemas/FinalizationPoint'
+        startEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
+        endEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
         linkAction:
           $ref: '#/components/schemas/LinkActionEnum'
     VotingKeyLinkTransactionDTO:
@@ -3348,7 +3290,7 @@ components:
           type: string
           description: Maximum number of blocks for which a hash lock can exist.
           example: 2d
-    SecretHashAlgorithmEnum.:
+    LockHashAlgorithmEnum.:
       type: integer
       enum:
         - 0
@@ -3393,7 +3335,7 @@ components:
         status:
           $ref: '#/components/schemas/Status'
         hashAlgorithm:
-          $ref: '#/components/schemas/SecretHashAlgorithmEnum.'
+          $ref: '#/components/schemas/LockHashAlgorithmEnum.'
         secret:
           $ref: '#/components/schemas/Secret'
         recipientAddress:
@@ -3459,7 +3401,7 @@ components:
         duration:
           $ref: '#/components/schemas/BlockDuration'
         hashAlgorithm:
-          $ref: '#/components/schemas/SecretHashAlgorithmEnum.'
+          $ref: '#/components/schemas/LockHashAlgorithmEnum.'
     SecretLockTransactionDTO:
       type: object
       description: 'Transaction to sends mosaics to a recipient if the proof used is revealed. If the duration is reached, the locked funds go back to the sender of the transaction.'
@@ -3479,7 +3421,7 @@ components:
         secret:
           $ref: '#/components/schemas/Hash256'
         hashAlgorithm:
-          $ref: '#/components/schemas/SecretHashAlgorithmEnum.'
+          $ref: '#/components/schemas/LockHashAlgorithmEnum.'
         proof:
           type: string
           description: Original random set of bytes.
@@ -4670,8 +4612,12 @@ components:
     MosaicAddressRestrictionDTO:
       type: object
       required:
+        - id
         - mosaicRestrictionEntry
       properties:
+        id:
+          type: string
+          description: Internal resource identifier.
         mosaicRestrictionEntry:
           $ref: '#/components/schemas/MosaicAddressRestrictionEntryWrapperDTO'
     MosaicAddressRestrictionEntryDTO:
@@ -4734,8 +4680,12 @@ components:
     MosaicGlobalRestrictionDTO:
       type: object
       required:
+        - id
         - mosaicRestrictionEntry
       properties:
+        id:
+          type: string
+          description: Internal resource identifier.
         mosaicRestrictionEntry:
           $ref: '#/components/schemas/MosaicGlobalRestrictionEntryWrapperDTO'
     MosaicGlobalRestrictionEntryDTO:
@@ -4817,6 +4767,21 @@ components:
           type: string
           description: Maximum number of mosaic restriction values.
           example: '20'
+    MosaicRestrictionsPage:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Array of mosaic restrictions.
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/MosaicAddressRestrictionDTO'
+              - $ref: '#/components/schemas/MosaicGlobalRestrictionDTO'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     MessageTypeEnum:
       type: integer
       enum:
