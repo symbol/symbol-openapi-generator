@@ -2,7 +2,7 @@ openapi: 3.0.2
 info:
   version: 0.10.0
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 2.0.0
+  description: OpenAPI Specification of catapult-rest 2.1.0
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -1951,7 +1951,9 @@ components:
         - totalFee
         - generationHash
         - stateHashSubCacheMerkleRoots
-        - numTransactions
+        - totalTransactionsCount
+        - transactionsCount
+        - statementsCount
       properties:
         hash:
           $ref: '#/components/schemas/Hash256'
@@ -1963,11 +1965,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Hash256'
-        numTransactions:
+        totalTransactionsCount:
           type: integer
-          example: 0
-        numStatements:
+          description: |
+            Total number of [transactions](https://docs.symbolplatform.com/concepts/transaction.html) confirmed in this block, including *embedded* transactions (i.e. transactions contained within aggregate transactions).
+          example: 1
+        transactionsCount:
           type: integer
+          description: |
+            Number of [transactions](https://docs.symbolplatform.com/concepts/transaction.html) confirmed in this block. This does not count *embedded* transactions (i.e. transactions contained within aggregate transactions).
+          example: 1
+        statementsCount:
+          type: integer
+          description: |
+            Number of statements (of any kind) present in this block. Bear in mind that some of them (like [resolution statements](https://docs.symbolplatform.com/concepts/receipt.html#resolution-statement)) are triggered by transactions present in the block, but in general, [transaction statements](https://docs.symbolplatform.com/concepts/receipt.html#transaction-statement) are not.
           example: 1
     BlockPage:
       type: object
@@ -4800,35 +4811,11 @@ components:
               - $ref: '#/components/schemas/MosaicGlobalRestrictionDTO'
         pagination:
           $ref: '#/components/schemas/Pagination'
-    MessageTypeEnum:
-      type: integer
-      enum:
-        - 0
-        - 1
-        - 254
-      description: |
-        Type of message:
-        * 0 - Regular message.
-        * 1 - Encrypted message.
-        * 254 - Persistent harvesting delegation.
-      example: 0
     EmbeddedTransferTransactionDTO:
       type: object
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
         - $ref: '#/components/schemas/TransferTransactionBodyDTO'
-    MessageDTO:
-      type: object
-      required:
-        - type
-        - payload
-      properties:
-        type:
-          $ref: '#/components/schemas/MessageTypeEnum'
-        payload:
-          type: string
-          format: hex
-          description: Content of the message.
     TransferNetworkPropertiesDTO:
       type: object
       properties:
@@ -4841,7 +4828,6 @@ components:
       required:
         - recipientAddress
         - mosaics
-        - message
       properties:
         recipientAddress:
           $ref: '#/components/schemas/UnresolvedAddress'
@@ -4852,7 +4838,8 @@ components:
           items:
             $ref: '#/components/schemas/UnresolvedMosaic'
         message:
-          $ref: '#/components/schemas/MessageDTO'
+          type: string
+          description: Transfer transaction message
     TransferTransactionDTO:
       type: object
       description: Transaction to transfer mosaics and a message to another account.
