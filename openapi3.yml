@@ -1,8 +1,8 @@
 openapi: 3.0.2
 info:
-  version: 0.9.6
+  version: 0.10.0
   title: Catapult REST Endpoints
-  description: OpenAPI Specification of catapult-rest 1.2.0
+  description: OpenAPI Specification of catapult-rest 2.1.0
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
@@ -20,6 +20,8 @@ tags:
   - name: Restriction Account routes
   - name: Receipt routes
   - name: Transaction routes
+  - name: Hash Lock routes
+  - name: Secret Lock routes
 paths:
   /accounts:
     get:
@@ -194,40 +196,28 @@ paths:
           $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
-  /chain/height:
+  /chain/info:
     get:
       tags:
         - Chain routes
-      summary: Get the current height of the chain
-      description: Returns the current height of the blockchain.
-      operationId: getChainHeight
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HeightInfoDTO'
-  /chain/score:
-    get:
-      tags:
-        - Chain routes
-      summary: Get the current score of the chain
+      summary: Get the current information of the chain
       description: |
-        Gets the current score of the blockchain. The higher the score, the better the chain.
+        Returns the current information of the blockchain.
+
+        The higher the score, the better the chain.
         During synchronization, nodes try to get the best blockchain in the network.
 
         The score for a block is derived from its difficulty and the time (in seconds) that has elapsed since the last block:
 
             block score = difficulty − time elapsed since last block
-      operationId: getChainScore
+      operationId: getChainInfo
       responses:
         '200':
           description: success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChainScoreDTO'
+                $ref: '#/components/schemas/ChainInfoDTO'
   /network:
     get:
       tags:
@@ -424,6 +414,8 @@ paths:
         - $ref: '#/components/parameters/recipientAddressQuery'
         - $ref: '#/components/parameters/signerPublicKeyQuery'
         - $ref: '#/components/parameters/heightQuery'
+        - $ref: '#/components/parameters/fromHeightQuery'
+        - $ref: '#/components/parameters/toHeightQuery'
         - $ref: '#/components/parameters/transactionTypeQuery'
         - $ref: '#/components/parameters/embedded'
         - $ref: '#/components/parameters/pageSizeQuery'
@@ -493,6 +485,8 @@ paths:
         - $ref: '#/components/parameters/recipientAddressQuery'
         - $ref: '#/components/parameters/signerPublicKeyQuery'
         - $ref: '#/components/parameters/heightQuery'
+        - $ref: '#/components/parameters/fromHeightQuery'
+        - $ref: '#/components/parameters/toHeightQuery'
         - $ref: '#/components/parameters/transactionTypeQuery'
         - $ref: '#/components/parameters/embedded'
         - $ref: '#/components/parameters/pageSizeQuery'
@@ -605,6 +599,8 @@ paths:
         - $ref: '#/components/parameters/recipientAddressQuery'
         - $ref: '#/components/parameters/signerPublicKeyQuery'
         - $ref: '#/components/parameters/heightQuery'
+        - $ref: '#/components/parameters/fromHeightQuery'
+        - $ref: '#/components/parameters/toHeightQuery'
         - $ref: '#/components/parameters/transactionTypeQuery'
         - $ref: '#/components/parameters/embedded'
         - $ref: '#/components/parameters/pageSizeQuery'
@@ -699,6 +695,86 @@ paths:
                 $ref: '#/components/schemas/AnnounceTransactionInfoDTO'
         '400':
           $ref: '#/components/responses/InvalidContent'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/account/{address}/lock/hash':
+    get:
+      tags:
+        - Hash Lock routes
+      summary: Search hash lock entries
+      description: Returns an array of hash locks.
+      operationId: searchHashLock
+      parameters:
+        - $ref: '#/components/parameters/address'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/pageNumberQuery'
+        - $ref: '#/components/parameters/offsetQuery'
+        - $ref: '#/components/parameters/orderQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HashLockPage'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/lock/hash/{hash}':
+    get:
+      tags:
+        - Hash Lock routes
+      summary: Get hash lock information
+      description: Gets the hash lock for a given hash.
+      operationId: getHashLock
+      parameters:
+        - $ref: '#/components/parameters/hashPath'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HashLockInfoDTO'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/account/{address}/lock/secret':
+    get:
+      tags:
+        - Secret Lock routes
+      summary: Search secret lock entries
+      description: Returns an array of secret locks.
+      operationId: searchSecretLock
+      parameters:
+        - $ref: '#/components/parameters/address'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/pageNumberQuery'
+        - $ref: '#/components/parameters/offsetQuery'
+        - $ref: '#/components/parameters/orderQuery'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretLockPage'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/lock/secret/{secret}':
+    get:
+      tags:
+        - Secret Lock routes
+      summary: Get secret lock information
+      description: Gets the secret lock for a given secret.
+      operationId: getSecretLock
+      parameters:
+        - $ref: '#/components/parameters/secretPath'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretLockInfoDTO'
         '409':
           $ref: '#/components/responses/InvalidArgument'
   /metadata:
@@ -1018,15 +1094,15 @@ paths:
           $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
-  '/restrictions/account/{accountId}':
+  '/restrictions/account/{address}':
     get:
       tags:
         - Restriction Account routes
       summary: Get the account restrictions
-      description: Returns the account restrictions for a given account.
+      description: Returns the account restrictions for a given address.
       operationId: getAccountRestrictions
       parameters:
-        - $ref: '#/components/parameters/accountIdPath'
+        - $ref: '#/components/parameters/address'
       responses:
         '200':
           description: success
@@ -1038,115 +1114,30 @@ paths:
           $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
-  /restrictions/account:
-    post:
-      tags:
-        - Restriction Account routes
-      summary: Get account restrictions for given array of addresses
-      description: Returns the account restrictions for a given array of addresses.
-      operationId: getAccountRestrictionsFromAccounts
-      requestBody:
-        $ref: '#/components/requestBodies/accountIds'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of account restrictions.
-                items:
-                  $ref: '#/components/schemas/AccountRestrictionsInfoDTO'
-        '400':
-          $ref: '#/components/responses/InvalidContent'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/restrictions/mosaic/{mosaicId}':
-    get:
-      tags:
-        - Restriction Mosaic routes
-      summary: Get mosaic global restriction for a given mosaic identifier.
-      description: Get mosaic global restriction.
-      operationId: getMosaicGlobalRestriction
-      parameters:
-        - $ref: '#/components/parameters/mosaicIdPath'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MosaicGlobalRestrictionDTO'
-        '404':
-          $ref: '#/components/responses/ResourceNotFound'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-    post:
-      tags:
-        - Restriction Mosaic routes
-      summary: Get mosaic address restrictions for a given mosaic and account identifiers array.
-      description: Get mosaic address restrictions.
-      operationId: getMosaicAddressRestrictions
-      parameters:
-        - $ref: '#/components/parameters/mosaicIdPath'
-      requestBody:
-        $ref: '#/components/requestBodies/accountIds'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                type: array
-                description: Array of mosaics address restrictions.
-                items:
-                  $ref: '#/components/schemas/MosaicAddressRestrictionDTO'
-        '400':
-          $ref: '#/components/responses/InvalidContent'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/restrictions/mosaic/{mosaicId}/address/{address}':
-    get:
-      tags:
-        - Restriction Mosaic routes
-      summary: Get mosaic address restrictions for a given mosaic and account address.
-      description: Get mosaic address restriction.
-      operationId: getMosaicAddressRestriction
-      parameters:
-        - $ref: '#/components/parameters/mosaicIdPath'
-        - $ref: '#/components/parameters/address'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MosaicAddressRestrictionDTO'
-        '404':
-          $ref: '#/components/responses/ResourceNotFound'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
   /restrictions/mosaic:
-    post:
+    get:
       tags:
         - Restriction Mosaic routes
-      summary: Get mosaic global restrictions for an array of mosaics.
-      description: Get mosaic global restrictions.
-      operationId: getMosaicGlobalRestrictions
-      requestBody:
-        $ref: '#/components/requestBodies/mosaicIds'
+      summary: Search mosaic restrictions
+      description: Returns an array of mosaic restrictions.
+      operationId: searchMosaicRestriction
+      parameters:
+        - $ref: '#/components/parameters/mosaicIdQuery'
+        - $ref: '#/components/parameters/entryType'
+        - $ref: '#/components/parameters/targetAddressQuery'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - $ref: '#/components/parameters/pageNumberQuery'
+        - $ref: '#/components/parameters/offsetQuery'
+        - $ref: '#/components/parameters/orderQuery'
       responses:
         '200':
           description: success
           content:
             application/json:
               schema:
-                type: array
-                description: Array of mosaics global restrictions.
-                items:
-                  $ref: '#/components/schemas/MosaicGlobalRestrictionDTO'
-        '400':
-          $ref: '#/components/responses/InvalidContent'
+                $ref: '#/components/schemas/MosaicRestrictionsPage'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
         '409':
           $ref: '#/components/responses/InvalidArgument'
 externalDocs:
@@ -1166,10 +1157,17 @@ components:
     accountIdPath:
       name: accountId
       in: path
-      description: Account public key or address enconded using a 32-character set.
+      description: Account public key or address encoded using a 32-character set.
       required: true
       schema:
         type: string
+    hashPath:
+      name: hash
+      in: path
+      description: Filter by hash.
+      required: true
+      schema:
+        $ref: '#/components/schemas/Hash256'
     heightPath:
       name: height
       in: path
@@ -1215,6 +1213,13 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/Hash256'
+    secretPath:
+      name: secret
+      in: path
+      description: Filter by secret.
+      required: true
+      schema:
+        $ref: '#/components/schemas/Secret'
     sourceAddressPath:
       name: sourceAddress
       in: path
@@ -1241,7 +1246,7 @@ components:
       in: query
       description: |
         Filter by address involved in the transaction. 
-        An account's address is consider to be involved in the transaction when the account is the sender, recipient, or it is required to cosign the transaction.
+        An account's address is considered to be involved in the transaction when the account is the sender, recipient, or it is required to cosign the transaction.
         This filter cannot be combined with ``recipientAddress`` and ``signerPublicKey`` query params.
       schema:
         $ref: '#/components/schemas/AddressBase32'
@@ -1274,10 +1279,22 @@ components:
       in: query
       description: |
         When true, the endpoint also returns all the embedded aggregate transactions.
-        Otherwise, only top-level transactions used to calcualate the block transactionsHash are returned.
+        Otherwise, only top-level transactions used to calculate the block transactionsHash are returned.
       schema:
         type: boolean
         default: false
+    entryType:
+      name: entryType
+      in: query
+      description: Filter by entry type.
+      schema:
+        $ref: '#/components/schemas/MosaicRestrictionEntryTypeEnum'
+    fromHeightQuery:
+      name: fromHeight
+      in: query
+      description: Only blocks with height greater or equal than this one are returned.
+      schema:
+        $ref: '#/components/schemas/Height'
     heightQuery:
       name: height
       in: query
@@ -1423,6 +1440,12 @@ components:
       description: Filter by target address.
       schema:
         $ref: '#/components/schemas/AddressBase32'
+    toHeightQuery:
+      name: toHeight
+      in: query
+      description: Only blocks with height smaller or equal than this one are returned.
+      schema:
+        $ref: '#/components/schemas/Height'
     transactionTypeQuery:
       name: type
       in: query
@@ -1515,10 +1538,16 @@ components:
       type: string
       description: 'Determines how hard is to harvest a new block, based on previous blocks.'
       example: 100000000000000
+    FinalizationEpoch:
+      type: integer
+      format: int64
+      description: Finalization Epoch
+      example: 123456
     FinalizationPoint:
-      type: string
+      type: integer
+      format: int64
       description: Finalization point
-      example: '123456'
+      example: 0
     Hash256:
       type: string
       format: hex
@@ -1526,6 +1555,10 @@ components:
     Height:
       type: string
       description: Height of the blockchain.
+      example: 1
+    FinalizedHeight:
+      type: string
+      description: Finalized height of the blockchain.
       example: 1
     Importance:
       type: string
@@ -1599,16 +1632,10 @@ components:
       required:
         - pageNumber
         - pageSize
-        - totalEntries
-        - totalPages
       properties:
         pageNumber:
           type: integer
         pageSize:
-          type: integer
-        totalEntries:
-          type: integer
-        totalPages:
           type: integer
     PublicKey:
       type: string
@@ -1636,6 +1663,16 @@ components:
         Score of the blockchain. During synchronization, nodes try to get the
         blockchain with highest score in the network.
       example: 1683298087010368300
+    Status:
+      type: integer
+      format: integer
+      description: A number that indicates the status.
+      example: 1
+    Secret:
+      type: string
+      format: hex
+      description: Secret.
+      example: FB8558E82C1968A3536CD77ACD7F9BC65E8B8F346714C9F91B42D6C2177BEDC1
     Signature:
       type: string
       description: Entity's signature generated by the signer.
@@ -1770,7 +1807,7 @@ components:
         - rawScore
       description: |
         Supplementary data stored for importance recalculation.
-        At each importance recalculation, existing buckets are shifted, the working bucket is finalized and a new working bucketis created.
+        At each importance recalculation, existing buckets are shifted, the working bucket is finalized and a new working bucket is created.
         Each bucket influences at most five importance recalculations.
       properties:
         startHeight:
@@ -1804,15 +1841,15 @@ components:
       type: object
       required:
         - publicKey
-        - startPoint
-        - endPoint
+        - startEpoch
+        - endEpoch
       properties:
         publicKey:
           type: string
-        startPoint:
-          type: string
-        endPoint:
-          type: string
+        startEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
+        endEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
     SupplementalPublicKeysDTO:
       type: object
       properties:
@@ -1914,7 +1951,9 @@ components:
         - totalFee
         - generationHash
         - stateHashSubCacheMerkleRoots
-        - numTransactions
+        - totalTransactionsCount
+        - transactionsCount
+        - statementsCount
       properties:
         hash:
           $ref: '#/components/schemas/Hash256'
@@ -1926,11 +1965,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Hash256'
-        numTransactions:
+        totalTransactionsCount:
           type: integer
-          example: 0
-        numStatements:
+          description: |
+            Total number of [transactions](https://docs.symbolplatform.com/concepts/transaction.html) confirmed in this block, including *embedded* transactions (i.e. transactions contained within aggregate transactions).
+          example: 1
+        transactionsCount:
           type: integer
+          description: |
+            Number of [transactions](https://docs.symbolplatform.com/concepts/transaction.html) confirmed in this block. This does not count *embedded* transactions (i.e. transactions contained within aggregate transactions).
+          example: 1
+        statementsCount:
+          type: integer
+          description: |
+            Number of statements (of any kind) present in this block. Bear in mind that some of them (like [resolution statements](https://docs.symbolplatform.com/concepts/receipt.html#resolution-statement)) are triggered by transactions present in the block, but in general, [transaction statements](https://docs.symbolplatform.com/concepts/receipt.html#transaction-statement) are not.
           example: 1
     BlockPage:
       type: object
@@ -1961,23 +2009,38 @@ components:
           description: List of complementary merkle path items needed to recalculate the merkle root.
           items:
             $ref: '#/components/schemas/MerklePathItemDTO'
-    ChainScoreDTO:
+    ChainInfoDTO:
       type: object
       required:
+        - height
         - scoreHigh
         - scoreLow
+        - latestFinalizedBlock
       properties:
+        height:
+          $ref: '#/components/schemas/Height'
         scoreHigh:
           $ref: '#/components/schemas/Score'
         scoreLow:
           $ref: '#/components/schemas/Score'
-    HeightInfoDTO:
+        latestFinalizedBlock:
+          $ref: '#/components/schemas/FinalizedBlockDTO'
+    FinalizedBlockDTO:
       type: object
       required:
+        - finalizationEpoch
+        - finalizationPoint
         - height
+        - hash
       properties:
+        finalizationEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
+        finalizationPoint:
+          $ref: '#/components/schemas/FinalizationPoint'
         height:
           $ref: '#/components/schemas/Height'
+        hash:
+          $ref: '#/components/schemas/Hash256'
     RentalFeesDTO:
       type: object
       required:
@@ -2277,11 +2340,19 @@ components:
         - 1
         - 2
         - 3
+        - 4
+        - 5
+        - 6
+        - 7
       description: |
         Role of the node:
         * 1 - Peer node.
         * 2 - Api node.
-        * 3 - Dual node.
+        * 3 - Peer Api node.
+        * 4 - Voting node.
+        * 5 - Peer Voting node.
+        * 6 - Api Voting node.
+        * 7 - Peer Api Voting node.
       example: 2
     CommunicationTimestampsDTO:
       type: object
@@ -3140,16 +3211,16 @@ components:
       type: object
       required:
         - linkedPublicKey
-        - startPoint
-        - endPoint
+        - startEpoch
+        - endEpoch
         - linkAction
       properties:
         linkedPublicKey:
           $ref: '#/components/schemas/VotingKey'
-        startPoint:
-          $ref: '#/components/schemas/FinalizationPoint'
-        endPoint:
-          $ref: '#/components/schemas/FinalizationPoint'
+        startEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
+        endEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
         linkAction:
           $ref: '#/components/schemas/LinkActionEnum'
     VotingKeyLinkTransactionDTO:
@@ -3170,6 +3241,51 @@ components:
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
         - $ref: '#/components/schemas/HashLockTransactionBodyDTO'
+    HashLockEntryDTO:
+      type: object
+      required:
+        - ownerAddress
+        - mosaicId
+        - amount
+        - endHeight
+        - status
+        - hash
+      properties:
+        ownerAddress:
+          $ref: '#/components/schemas/Address'
+        mosaicId:
+          $ref: '#/components/schemas/MosaicId'
+        amount:
+          $ref: '#/components/schemas/Amount'
+        endHeight:
+          $ref: '#/components/schemas/Height'
+        status:
+          $ref: '#/components/schemas/Status'
+        hash:
+          $ref: '#/components/schemas/Hash256'
+    HashLockInfoDTO:
+      type: object
+      required:
+        - id
+        - lock
+      properties:
+        id:
+          type: string
+        lock:
+          $ref: '#/components/schemas/HashLockEntryDTO'
+    HashLockPage:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Array of hash locks.
+          items:
+            $ref: '#/components/schemas/HashLockInfoDTO'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     HashLockTransactionBodyDTO:
       type: object
       required:
@@ -3203,7 +3319,7 @@ components:
           type: string
           description: Maximum number of blocks for which a hash lock can exist.
           example: 2d
-    LockHashAlgorithmEnum:
+    LockHashAlgorithmEnum.:
       type: integer
       enum:
         - 0
@@ -3224,6 +3340,60 @@ components:
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
         - $ref: '#/components/schemas/SecretProofTransactionBodyDTO'
+    SecretLockEntryDTO:
+      type: object
+      required:
+        - ownerAddress
+        - mosaicId
+        - amount
+        - endHeight
+        - status
+        - hashAlgorithm
+        - secret
+        - recipientAddress
+        - compositeHash
+      properties:
+        ownerAddress:
+          $ref: '#/components/schemas/Address'
+        mosaicId:
+          $ref: '#/components/schemas/MosaicId'
+        amount:
+          $ref: '#/components/schemas/Amount'
+        endHeight:
+          $ref: '#/components/schemas/Height'
+        status:
+          $ref: '#/components/schemas/Status'
+        hashAlgorithm:
+          $ref: '#/components/schemas/LockHashAlgorithmEnum.'
+        secret:
+          $ref: '#/components/schemas/Secret'
+        recipientAddress:
+          $ref: '#/components/schemas/Address'
+        compositeHash:
+          $ref: '#/components/schemas/Hash256'
+    SecretLockInfoDTO:
+      type: object
+      required:
+        - id
+        - lock
+      properties:
+        id:
+          type: string
+        lock:
+          $ref: '#/components/schemas/SecretLockEntryDTO'
+    SecretLockPage:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Array of secret locks.
+          items:
+            $ref: '#/components/schemas/SecretLockInfoDTO'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     SecretLockNetworkPropertiesDTO:
       type: object
       properties:
@@ -3260,7 +3430,7 @@ components:
         duration:
           $ref: '#/components/schemas/BlockDuration'
         hashAlgorithm:
-          $ref: '#/components/schemas/LockHashAlgorithmEnum'
+          $ref: '#/components/schemas/LockHashAlgorithmEnum.'
     SecretLockTransactionDTO:
       type: object
       description: 'Transaction to sends mosaics to a recipient if the proof used is revealed. If the duration is reached, the locked funds go back to the sender of the transaction.'
@@ -3280,7 +3450,7 @@ components:
         secret:
           $ref: '#/components/schemas/Hash256'
         hashAlgorithm:
-          $ref: '#/components/schemas/LockHashAlgorithmEnum'
+          $ref: '#/components/schemas/LockHashAlgorithmEnum.'
         proof:
           type: string
           description: Original random set of bytes.
@@ -4471,8 +4641,12 @@ components:
     MosaicAddressRestrictionDTO:
       type: object
       required:
+        - id
         - mosaicRestrictionEntry
       properties:
+        id:
+          type: string
+          description: Internal resource identifier.
         mosaicRestrictionEntry:
           $ref: '#/components/schemas/MosaicAddressRestrictionEntryWrapperDTO'
     MosaicAddressRestrictionEntryDTO:
@@ -4535,8 +4709,12 @@ components:
     MosaicGlobalRestrictionDTO:
       type: object
       required:
+        - id
         - mosaicRestrictionEntry
       properties:
+        id:
+          type: string
+          description: Internal resource identifier.
         mosaicRestrictionEntry:
           $ref: '#/components/schemas/MosaicGlobalRestrictionEntryWrapperDTO'
     MosaicGlobalRestrictionEntryDTO:
@@ -4618,35 +4796,26 @@ components:
           type: string
           description: Maximum number of mosaic restriction values.
           example: '20'
-    MessageTypeEnum:
-      type: integer
-      enum:
-        - 0
-        - 1
-        - 254
-      description: |
-        Type of message:
-        * 0 - Regular message.
-        * 1 - Encrypted message.
-        * 254 - Persistent harvesting delegation.
-      example: 0
+    MosaicRestrictionsPage:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Array of mosaic restrictions.
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/MosaicAddressRestrictionDTO'
+              - $ref: '#/components/schemas/MosaicGlobalRestrictionDTO'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     EmbeddedTransferTransactionDTO:
       type: object
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
         - $ref: '#/components/schemas/TransferTransactionBodyDTO'
-    MessageDTO:
-      type: object
-      required:
-        - type
-        - payload
-      properties:
-        type:
-          $ref: '#/components/schemas/MessageTypeEnum'
-        payload:
-          type: string
-          format: hex
-          description: Content of the message.
     TransferNetworkPropertiesDTO:
       type: object
       properties:
@@ -4659,7 +4828,6 @@ components:
       required:
         - recipientAddress
         - mosaics
-        - message
       properties:
         recipientAddress:
           $ref: '#/components/schemas/UnresolvedAddress'
@@ -4670,7 +4838,8 @@ components:
           items:
             $ref: '#/components/schemas/UnresolvedMosaic'
         message:
-          $ref: '#/components/schemas/MessageDTO'
+          type: string
+          description: Transfer transaction message
     TransferTransactionDTO:
       type: object
       description: Transaction to transfer mosaics and a message to another account.

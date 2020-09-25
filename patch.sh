@@ -24,6 +24,7 @@ for value in EmbeddedTransactionInfoDTO.properties.transaction \
   TransactionInfoDTO.properties.transaction \
   TransactionInfoDTO.properties.meta \
   TransactionStatementDTO.properties.receipts.items \
+  MosaicRestrictionsPage.properties.data.items \
   AccountRestrictionDTO.properties.values.items; do
   replaceAnyOf $value object
 done
@@ -34,7 +35,7 @@ for value in ResolutionEntryDTO.properties.resolved \
   replaceAnyOf $value string
 done
 
-for value in Amount FinalizationPoint BlockDuration Difficulty Height Importance Score Timestamp RestrictionValue CosignatureVersion; do
+for value in Amount FinalizedHeight BlockDuration Difficulty Height Importance Score Timestamp RestrictionValue CosignatureVersion; do
   replaceXNumberString $value
 done
 
