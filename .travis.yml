@@ -16,9 +16,11 @@ cache:
     - $HOME/.gradle/wrapper/
     - gradle/wrapper/
 env:
-  - GEN_LIBRARY=typescript
-  - GEN_LIBRARY=java
-  - GEN_LIBRARY=python
+  global:
+    - DEV_BRANCH=dev
+    - RELEASE_BRANCH=main
+    - POST_RELEASE_BRANCH=main
+    - RELEASE_MESSAGE=release
 install:
   - npm install @openapitools/openapi-generator-cli@cli-4.3.1 yaml-cli@1.1.8  -g
   - pyenv install --list
@@ -28,30 +30,54 @@ install:
   - pip3 install -r test-requirements.txt
   - pip3 install pytest pyyaml twine wheel
 before_script:
+  - . ./travis/travis-functions.sh
+  - VERSION="$(load_version_from_file)"
+  - log_env_variables
   - pyenv --version ; pyenv versions
   - python --version ; python3 --version ; python3.5 --version
   - pip3 --version ; pip3 list
-script:
-#  - bash download.sh
   - bash patch.sh
-  - bash generate.sh $GEN_LIBRARY build
-deploy:
-  - provider: script
-    skip_cleanup: true
-    script: bash generate.sh $GEN_LIBRARY publish
-    on:
-      branch: main
-  - provider: script
-    skip_cleanup: true
-    script: bash generate.sh $GEN_LIBRARY release
-    on:
-      branch: release
-  - provider: script
-    skip_cleanup: true
-    script: bash post-release.sh
-    on:
-      branch: release
-      condition: "$GEN_LIBRARY = java"
+script:
+  - log_env_variables
+jobs:
+  include:
+    - stage: test
+      name: java
+      script: bash generate.sh java
+    - name: typescript
+      script: bash generate.sh typescript
+    - name: python
+      script: bash generate.sh python
+
+    - stage: alpha
+      name: java publish alpha
+      script: bash generate.sh java publish
+      if: branch = env(DEV_BRANCH) AND type = push
+    - name: typescript publish alpha
+      script: bash generate.sh typescript publish
+      if: branch = env(DEV_BRANCH) AND type = push
+    - name: python publish alpha
+      script: bash generate.sh python publish
+      if: branch = env(DEV_BRANCH) AND type = push
+
+    - stage: release
+      name: java publish release
+      script: bash generate.sh java release
+      if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
+    - name: typescript publish release
+      script: bash generate.sh typescript releae
+      if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
+    - name: python publish release
+      script: bash generate.sh python release
+      if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
+
+    - stage: post release
+      name: tag and version upgrade
+      script: /bin/bash travis/travis-functions.sh post_release_version_file
+      if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
+
+
+
 before_install:
   - |
     if [ -z "${signingKeyId}" ]; then

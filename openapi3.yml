@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 0.10.0
+  version: 0.10.1
   title: Catapult REST Endpoints
   description: OpenAPI Specification of catapult-rest 2.1.0
   license:
@@ -10,6 +10,7 @@ tags:
   - name: Account routes
   - name: Block routes
   - name: Chain routes
+  - name: Finalization routes
   - name: Metadata routes
   - name: Mosaic routes
   - name: Multisig routes
@@ -218,6 +219,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChainInfoDTO'
+  '/finalization/proof/epoch/{epoch}':
+    get:
+      tags:
+        - Finalization routes
+      summary: Get finalization proof
+      description: Gets finalization proof for the greatest height associated with the given epoch.
+      operationId: getFinalizationProofAtEpoch
+      parameters:
+        - name: epoch
+          in: path
+          description: Finalization epoch.
+          required: true
+          schema:
+            $ref: '#/components/schemas/FinalizationEpoch'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinalizationProofDTO'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
+  '/finalization/proof/height/{height}':
+    get:
+      tags:
+        - Finalization routes
+      summary: Get finalization proof
+      description: Gets finalization proof at the given height.
+      operationId: getFinalizationProofAtHeight
+      parameters:
+        - $ref: '#/components/parameters/heightPath'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinalizationProofDTO'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+        '409':
+          $ref: '#/components/responses/InvalidArgument'
   /network:
     get:
       tags:
@@ -416,8 +462,11 @@ paths:
         - $ref: '#/components/parameters/heightQuery'
         - $ref: '#/components/parameters/fromHeightQuery'
         - $ref: '#/components/parameters/toHeightQuery'
+        - $ref: '#/components/parameters/fromTransferAmountQuery'
+        - $ref: '#/components/parameters/toTransferAmountQuery'
         - $ref: '#/components/parameters/transactionTypeQuery'
         - $ref: '#/components/parameters/embedded'
+        - $ref: '#/components/parameters/transferMosaicIdQuery'
         - $ref: '#/components/parameters/pageSizeQuery'
         - $ref: '#/components/parameters/pageNumberQuery'
         - $ref: '#/components/parameters/offsetQuery'
@@ -487,8 +536,11 @@ paths:
         - $ref: '#/components/parameters/heightQuery'
         - $ref: '#/components/parameters/fromHeightQuery'
         - $ref: '#/components/parameters/toHeightQuery'
+        - $ref: '#/components/parameters/fromTransferAmountQuery'
+        - $ref: '#/components/parameters/toTransferAmountQuery'
         - $ref: '#/components/parameters/transactionTypeQuery'
         - $ref: '#/components/parameters/embedded'
+        - $ref: '#/components/parameters/transferMosaicIdQuery'
         - $ref: '#/components/parameters/pageSizeQuery'
         - $ref: '#/components/parameters/pageNumberQuery'
         - $ref: '#/components/parameters/offsetQuery'
@@ -601,8 +653,11 @@ paths:
         - $ref: '#/components/parameters/heightQuery'
         - $ref: '#/components/parameters/fromHeightQuery'
         - $ref: '#/components/parameters/toHeightQuery'
+        - $ref: '#/components/parameters/fromTransferAmountQuery'
+        - $ref: '#/components/parameters/toTransferAmountQuery'
         - $ref: '#/components/parameters/transactionTypeQuery'
         - $ref: '#/components/parameters/embedded'
+        - $ref: '#/components/parameters/transferMosaicIdQuery'
         - $ref: '#/components/parameters/pageSizeQuery'
         - $ref: '#/components/parameters/pageNumberQuery'
         - $ref: '#/components/parameters/offsetQuery'
@@ -746,6 +801,7 @@ paths:
       operationId: searchSecretLock
       parameters:
         - $ref: '#/components/parameters/address'
+        - $ref: '#/components/parameters/secretQuery'
         - $ref: '#/components/parameters/pageSizeQuery'
         - $ref: '#/components/parameters/pageNumberQuery'
         - $ref: '#/components/parameters/offsetQuery'
@@ -757,24 +813,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SecretLockPage'
-        '409':
-          $ref: '#/components/responses/InvalidArgument'
-  '/lock/secret/{secret}':
-    get:
-      tags:
-        - Secret Lock routes
-      summary: Get secret lock information
-      description: Gets the secret lock for a given secret.
-      operationId: getSecretLock
-      parameters:
-        - $ref: '#/components/parameters/secretPath'
-      responses:
-        '200':
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecretLockInfoDTO'
         '409':
           $ref: '#/components/responses/InvalidArgument'
   /metadata:
@@ -1213,13 +1251,6 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/Hash256'
-    secretPath:
-      name: secret
-      in: path
-      description: Filter by secret.
-      required: true
-      schema:
-        $ref: '#/components/schemas/Secret'
     sourceAddressPath:
       name: sourceAddress
       in: path
@@ -1295,6 +1326,14 @@ components:
       description: Only blocks with height greater or equal than this one are returned.
       schema:
         $ref: '#/components/schemas/Height'
+    fromTransferAmountQuery:
+      name: fromTransferAmount
+      in: query
+      description: |
+        Requires providing the `transferMosaicId` filter.
+        Only transfer transactions with a transfer amount of the provided mosaic id, greater or equal than this amount are returned.
+      schema:
+        type: integer
     heightQuery:
       name: height
       in: query
@@ -1396,6 +1435,12 @@ components:
       description: Filter by address of the account receiving the transaction.
       schema:
         $ref: '#/components/schemas/AddressBase32'
+    secretQuery:
+      name: secret
+      in: query
+      description: Filter by secret.
+      schema:
+        $ref: '#/components/schemas/Secret'
     senderAddressQuery:
       name: senderAddress
       in: query
@@ -1446,6 +1491,14 @@ components:
       description: Only blocks with height smaller or equal than this one are returned.
       schema:
         $ref: '#/components/schemas/Height'
+    toTransferAmountQuery:
+      name: toTransferAmount
+      in: query
+      description: |
+        Requires providing the `transferMosaicId` filter.
+        Only transfer transactions with a transfer amount of the provided mosaic id, lesser or equal than this amount are returned.
+      schema:
+        type: integer
     transactionTypeQuery:
       name: type
       in: query
@@ -1458,6 +1511,12 @@ components:
         type: array
         items:
           $ref: '#/components/schemas/TransactionTypeEnum'
+    transferMosaicIdQuery:
+      name: transferMosaicId
+      in: query
+      description: Filters transactions involving a specific ``mosaicId``.
+      schema:
+        $ref: '#/components/schemas/MosaicId'
   requestBodies:
     accountIds:
       content:
@@ -2130,6 +2189,87 @@ components:
       properties:
         signature:
           $ref: '#/components/schemas/Signature'
+    BmTreeSignature:
+      type: object
+      required:
+        - root
+        - top
+        - bottom
+      properties:
+        root:
+          $ref: '#/components/schemas/ParentPublicKeySignaturePair'
+        top:
+          $ref: '#/components/schemas/ParentPublicKeySignaturePair'
+        bottom:
+          $ref: '#/components/schemas/ParentPublicKeySignaturePair'
+    FinalizationProofDTO:
+      type: object
+      required:
+        - version
+        - finalizationEpoch
+        - finalizationPoint
+        - height
+        - hash
+        - messageGroups
+      properties:
+        version:
+          type: integer
+        finalizationEpoch:
+          $ref: '#/components/schemas/FinalizationEpoch'
+        finalizationPoint:
+          $ref: '#/components/schemas/FinalizationPoint'
+        height:
+          $ref: '#/components/schemas/Height'
+        hash:
+          $ref: '#/components/schemas/Hash256'
+        messageGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageGroup'
+    MessageGroup:
+      type: object
+      required:
+        - stage
+        - height
+        - hashes
+        - signatures
+      properties:
+        stage:
+          description: Message stage
+          $ref: '#/components/schemas/StageEnum'
+        height:
+          description: Block height corresponding to the first hash.
+          $ref: '#/components/schemas/Height'
+        hashes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hash256'
+        signatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/BmTreeSignature'
+    ParentPublicKeySignaturePair:
+      type: object
+      required:
+        - parentPublicKey
+        - signature
+      properties:
+        parentPublicKey:
+          $ref: '#/components/schemas/PublicKey'
+        signature:
+          $ref: '#/components/schemas/Signature'
+    StageEnum:
+      type: integer
+      enum:
+        - 0
+        - 1
+        - 2
+      description: |
+        Type of stage:
+        * 0 - Prevote.
+        * 1 - Precommit.
+        * 2 - Count.
+      example: 0
     NodeIdentityEqualityStrategy:
       type: string
       description: |
@@ -2765,7 +2905,7 @@ components:
         * Failure_RestrictionMosaic_Invalid_Restriction_Type - Validation failed because the mosaic restriction type is invalid.
         * Failure_RestrictionMosaic_Previous_Value_Mismatch - Validation failed because specified previous value does not match current value.
         * Failure_RestrictionMosaic_Previous_Value_Must_Be_Zero - Validation failed because specified previous value is nonzero.
-        * Failure_RestrictionMosaic_Max_Restrictions_Exceeded - Validation failed because the maximum number of restrictions would be exeeded.
+        * Failure_RestrictionMosaic_Max_Restrictions_Exceeded - Validation failed because the maximum number of restrictions would be exceeded.
         * Failure_RestrictionMosaic_Cannot_Delete_Nonexistent_Restriction - Validation failed because nonexistent restriction cannot be deleted.
         * Failure_RestrictionMosaic_Unknown_Global_Restriction - Validation failed because required global restriction does not exist.
         * Failure_RestrictionMosaic_Invalid_Global_Restriction - Validation failed because mosaic has invalid global restriction.
