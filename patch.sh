@@ -23,6 +23,7 @@ replaceXNumberString() {
 for value in EmbeddedTransactionInfoDTO.properties.transaction \
   TransactionInfoDTO.properties.transaction \
   TransactionInfoDTO.properties.meta \
+  MosaicRestrictionDTO \
   TransactionStatementDTO.properties.receipts.items \
   MosaicRestrictionsPage.properties.data.items \
   AccountRestrictionDTO.properties.values.items; do
