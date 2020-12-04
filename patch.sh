@@ -22,7 +22,9 @@ replaceXNumberString() {
 
 for value in EmbeddedTransactionInfoDTO.properties.transaction \
   TransactionInfoDTO.properties.transaction \
+  BlockInfoDTO.properties.block \
   TransactionInfoDTO.properties.meta \
+  MerkleStateInfoDTO.properties.tree.items \
   MosaicRestrictionDTO \
   TransactionStatementDTO.properties.receipts.items \
   MosaicRestrictionsPage.properties.data.items \
@@ -36,7 +38,7 @@ for value in ResolutionEntryDTO.properties.resolved \
   replaceAnyOf $value string
 done
 
-for value in Amount FinalizedHeight BlockDuration Difficulty Height Importance Score Timestamp RestrictionValue CosignatureVersion; do
+for value in Amount UInt64 FinalizedHeight BlockDuration Difficulty Height Importance Score Timestamp RestrictionValue CosignatureVersion; do
   replaceXNumberString $value
 done
 
