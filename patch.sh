@@ -24,6 +24,7 @@ for value in EmbeddedTransactionInfoDTO.properties.transaction \
   TransactionInfoDTO.properties.transaction \
   BlockInfoDTO.properties.block \
   TransactionInfoDTO.properties.meta \
+  MerkleStateInfoDTO.properties.tree.items \
   MosaicRestrictionDTO \
   TransactionStatementDTO.properties.receipts.items \
   MosaicRestrictionsPage.properties.data.items \
