@@ -65,7 +65,7 @@ jobs:
       script: bash generate.sh java release
       if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
     - name: typescript publish release
-      script: bash generate.sh typescript releae
+      script: bash generate.sh typescript release
       if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
     - name: python publish release
       script: bash generate.sh python release
