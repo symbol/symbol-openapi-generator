@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 0.10.5
+  version: 0.10.7
   title: Catapult REST Endpoints
   description: OpenAPI Specification of catapult-rest 2.2.0
   license:
@@ -2172,8 +2172,8 @@ components:
     VotingKey:
       type: string
       format: hex
-      description: 48 bytes voting public key.
-      example: 4EDDA97C991A0BF44E0570B0BA0E0F7F1CE821A799726888734F28DDCCE8C5911F82C8663A2CB9C2215A28BD6A2E1F4D
+      description: 32 bytes voting public key.
+      example: 4EDDA97C991A0BF44E0570B0BA0E0F7F1CE821A799726888734F28DDCCE8C591
     RestrictionValue:
       type: string
       description: Restriction value.
@@ -2630,8 +2630,6 @@ components:
       properties:
         root:
           $ref: '#/components/schemas/ParentPublicKeySignaturePair'
-        top:
-          $ref: '#/components/schemas/ParentPublicKeySignaturePair'
         bottom:
           $ref: '#/components/schemas/ParentPublicKeySignaturePair'
     FinalizationProofDTO:
@@ -2666,9 +2664,6 @@ components:
         - hashes
         - signatures
       properties:
-        signatureSchema:
-          description: Signature schema to sepecify v1/v2 voting signature (Optional. For testnet only).
-          type: integer
         stage:
           description: Message stage
           $ref: '#/components/schemas/StageEnum'
