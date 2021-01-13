@@ -2555,22 +2555,27 @@ components:
         - medianFeeMultiplier
         - highestFeeMultiplier
         - lowestFeeMultiplier
+        - minFeeMultiplier
       properties:
         averageFeeMultiplier:
           $ref: '#/components/schemas/BlockFeeMultiplier'
-          description: Average fee multiplier over the last "numBlocksTransactionFeeStats".
+          description: Average fee multiplier over the last "numBlocksTransactionFeeStats" on the current Network.
           example: 1
         medianFeeMultiplier:
           $ref: '#/components/schemas/BlockFeeMultiplier'
-          description: Median fee multiplier over the last "numBlocksTransactionFeeStats".
+          description: Median fee multiplier over the last "numBlocksTransactionFeeStats" on the current Network.
           example: 1
         highestFeeMultiplier:
           $ref: '#/components/schemas/BlockFeeMultiplier'
-          description: Highest fee multiplier over the last "numBlocksTransactionFeeStats".
+          description: Highest fee multiplier over the last "numBlocksTransactionFeeStats" on the current Network.
           example: 2
         lowestFeeMultiplier:
           $ref: '#/components/schemas/BlockFeeMultiplier'
-          description: Lowest fee multiplier over the last "numBlocksTransactionFeeStats".
+          description: Lowest fee multiplier over the last "numBlocksTransactionFeeStats" on the current Network.
+          example: 0
+        minFeeMultiplier:
+          $ref: '#/components/schemas/BlockFeeMultiplier'
+          description: Minimal fee multiplier on the current connected Node.
           example: 0
     NetworkTypeEnum:
       type: integer
