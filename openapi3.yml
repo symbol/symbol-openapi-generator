@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 0.11.1
+  version: 0.11.2
   title: Catapult REST Endpoints
   description: OpenAPI Specification of catapult-rest 2.3.0
   license:
@@ -1251,6 +1251,8 @@ paths:
       operationId: searchReceipts
       parameters:
         - $ref: '#/components/parameters/heightQuery'
+        - $ref: '#/components/parameters/fromHeightQuery'
+        - $ref: '#/components/parameters/toHeightQuery'
         - $ref: '#/components/parameters/receiptTypeQuery'
         - $ref: '#/components/parameters/recipientAddressQuery'
         - $ref: '#/components/parameters/senderAddressQuery'
