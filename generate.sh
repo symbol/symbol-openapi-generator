@@ -31,13 +31,7 @@ if [[ " ${arg1Values[*]} " != *"$LIBRARY_ARG"* || "" == "$LIBRARY_ARG" ]]; then
 fi
 
 SNAPSHOT_PREFIX=-SNAPSHOT
-FULL_VERSION=$(head -n 1 version.txt)
-VERSION="${FULL_VERSION%$SNAPSHOT_PREFIX}"
-SNAPSHOT=false
-case "$FULL_VERSION" in
-*$SNAPSHOT_PREFIX*) SNAPSHOT=true ;;
-*) echo SNAPSHOT=false ;;
-esac
+VERSION=$(head -n 1 version.txt)
 
 TRAVIS_REPO_SLUG="${TRAVIS_REPO_SLUG:-nemtech/symbol-openapi-generator}"
 
@@ -56,7 +50,9 @@ fi
 if [[ $OPERATION_ARG == "release" ]]; then
   SNAPSHOT=false
   FULL_VERSION="$VERSION"
-  echo "$VERSION" >'version.txt'
+else
+  SNAPSHOT=true
+  FULL_VERSION="$VERSION$SNAPSHOT_PREFIX"
 fi
 
 echo "Library: $LIBRARY_ARG"
