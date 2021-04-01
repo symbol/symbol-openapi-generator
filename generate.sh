@@ -168,7 +168,8 @@ generatePython() {
 
   # Patch openapi yaml for python test generator
   PY_INPUT=$INPUT_PATCHED
-  cp $INPUT $PY_INPUT
+  cp -f $INPUT $PY_INPUT
+
   echo "python_openapi3_patch.sh $PY_INPUT $INPUT"
   bash python_openapi3_patch.sh $PY_INPUT $INPUT
   echo "The command \"bash python_openapi3_patch.sh \$PY_INPUT \$INPUT\" exited with $?."
@@ -190,7 +191,6 @@ generatePython() {
     --type-mappings=x-number-string=int
   # Build, test, publish/release
   buildPython "$BUILD_DIR" "$ARTIFACT_ID" "$PACKAGE_VERSION" "$OPERATION"
-  rm $PY_INPUT
   return 0
 }
 

@@ -466,7 +466,7 @@ paths:
       description: |
         Announces a transaction to the network.
         The [catbuffer library](https://github.com/nemtech/catbuffer) defines the protocol to serialize and deserialize Symbol entities.
-        Catbuffers are integrated into [Symbol SDKs](https://nemtech.github.io/sdk.html). 
+        Catbuffers are integrated into [Symbol SDKs](https://nemtech.github.io/sdk.html).
         It's recommended to use SDKs instead of calling the API endpoint directly to announce transactions.
       operationId: announceTransaction
       requestBody:
@@ -1556,7 +1556,7 @@ components:
       name: address
       in: query
       description: |
-        Filter by address involved in the transaction. 
+        Filter by address involved in the transaction.
         An account's address is considered to be involved in the transaction when the account is the sender, recipient, or it is required to cosign the transaction.
         This filter cannot be combined with ``recipientAddress`` and ``signerPublicKey`` query params.
       schema:
@@ -2070,7 +2070,7 @@ components:
     Order:
       type: string
       description: |
-        Indicates how to sort the results: 
+        Indicates how to sort the results:
         * ``asc`` - ascending
         * ``desc`` - descending
       enum:
@@ -2408,9 +2408,15 @@ components:
         meta:
           $ref: '#/components/schemas/BlockMetaDTO'
         block:
-          anyOf:
+          oneOf:
             - $ref: '#/components/schemas/BlockDTO'
             - $ref: '#/components/schemas/ImportanceBlockDTO'
+          discriminator:
+            propertyName: type
+            mapping:
+              0x8043: ImportanceBlockDTO
+              0x8143: BlockDTO
+              0x8243: ImportanceBlockDTO # nemesis block
     BlockMetaDTO:
       type: object
       required:
@@ -3691,7 +3697,7 @@ components:
       description: |
         Transaction to link a public key to an account.
         TLS uses the linked public key to create sessions.
-        Required for node operators. 
+        Required for node operators.
       allOf:
         - $ref: '#/components/schemas/TransactionDTO'
         - $ref: '#/components/schemas/NodeKeyLinkTransactionBodyDTO'
