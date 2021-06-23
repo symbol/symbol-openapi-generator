@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 1.0.0
+  version: 1.0.1
   title: Catapult REST Endpoints
   description: OpenAPI Specification of catapult-rest
   license:
@@ -1591,6 +1591,10 @@ components:
       description: |
         When true, the endpoint also returns all the embedded aggregate transactions.
         Otherwise, only top-level transactions used to calculate the block transactionsHash are returned.
+        **Note:** This field does not work when combined with the ``address`` parameter. This is,
+        embedded transactions containing the address specified through the ``address`` parameter
+        will not be returned even when used with ``embedded=true``. There is no problem when using
+        other parameters like ``recipientAddress`` instead.
       schema:
         type: boolean
         default: false
@@ -2935,6 +2939,25 @@ components:
           $ref: '#/components/schemas/Timestamp'
         receiveTimestamp:
           $ref: '#/components/schemas/Timestamp'
+    DeploymentDTO:
+      type: object
+      required:
+        - deploymentTool
+        - deploymentToolVersion
+        - lastUpdatedDate
+      properties:
+        deploymentTool:
+          type: string
+          example: symbol-bootstrap
+          description: 'The tool used to create, maintain and deploy the node. Examples: symbol-bootstrap, manual.'
+        deploymentToolVersion:
+          type: string
+          example: 1.0.6
+          description: 'The version of the tool used to create, maintain and deploy the node.'
+        lastUpdatedDate:
+          type: string
+          example: '2021-06-02'
+          description: When was the node upgraded.
     NodeHealthDTO:
       type: object
       required:
@@ -3005,6 +3028,7 @@ components:
       required:
         - restVersion
         - sdkVersion
+        - deployment
       properties:
         restVersion:
           type: string
@@ -3014,6 +3038,8 @@ components:
           type: string
           example: 0.7.14
           description: catapult-sdk component version.
+        deployment:
+          $ref: '#/components/schemas/DeploymentDTO'
     ServerInfoDTO:
       type: object
       required:
