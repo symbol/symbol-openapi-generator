@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 1.0.0
+  version: 1.0.1
   title: Catapult REST Endpoints
   description: OpenAPI Specification of catapult-rest
   license:
@@ -1456,6 +1456,15 @@ externalDocs:
   url: 'https://nemtech.github.io/'
 servers:
   - url: 'http://localhost:3000'
+    description: Local development
+  - url: 'http://ngl-dual-101.testnet.symboldev.network:3000'
+    description: A TESTNET node run by NEM Group
+  - url: 'http://ngl-dual-201.testnet.symboldev.network:3000'
+    description: A TESTNET node run by NEM Group
+  - url: 'http://ngl-api-001.symbolblockchain.io:3000'
+    description: A MAINNET node run by NEM Group
+  - url: 'http://ngl-api-301.symbolblockchain.io:3000'
+    description: A MAINNET node run by NEM Group
 components:
   parameters:
     address:
@@ -1464,7 +1473,7 @@ components:
       description: Account address.
       required: true
       schema:
-        $ref: '#/components/schemas/AddressBase32'
+        $ref: '#/components/schemas/Address'
     accountIdPath:
       name: accountId
       in: path
@@ -1537,7 +1546,7 @@ components:
       description: Account address.
       required: true
       schema:
-        $ref: '#/components/schemas/AddressBase32'
+        $ref: '#/components/schemas/Address'
     transactionHashPath:
       name: hash
       in: path
@@ -1556,11 +1565,11 @@ components:
       name: address
       in: query
       description: |
-        Filter by address involved in the transaction. 
+        Filter by address involved in the transaction.
         An account's address is considered to be involved in the transaction when the account is the sender, recipient, or it is required to cosign the transaction.
         This filter cannot be combined with ``recipientAddress`` and ``signerPublicKey`` query params.
       schema:
-        $ref: '#/components/schemas/AddressBase32'
+        $ref: '#/components/schemas/Address'
     artifactIdQuery:
       name: artifactId
       in: query
@@ -1584,13 +1593,17 @@ components:
       description: Filter by beneficiary address.
       in: query
       schema:
-        $ref: '#/components/schemas/AddressBase32'
+        $ref: '#/components/schemas/Address'
     embedded:
       name: embedded
       in: query
       description: |
         When true, the endpoint also returns all the embedded aggregate transactions.
         Otherwise, only top-level transactions used to calculate the block transactionsHash are returned.
+        **Note:** This field does not work when combined with the ``address`` parameter. This is,
+        embedded transactions containing the address specified through the ``address`` parameter
+        will not be returned even when used with ``embedded=true``. There is no problem when using
+        other parameters like ``recipientAddress`` instead.
       schema:
         type: boolean
         default: false
@@ -1672,7 +1685,7 @@ components:
       in: query
       description: Filter by owner address.
       schema:
-        $ref: '#/components/schemas/AddressBase32'
+        $ref: '#/components/schemas/Address'
     orderByBlockQuery:
       name: orderBy
       in: query
@@ -1714,7 +1727,7 @@ components:
       in: query
       description: Filter by address of the account receiving the transaction.
       schema:
-        $ref: '#/components/schemas/AddressBase32'
+        $ref: '#/components/schemas/Address'
     secretQuery:
       name: secret
       in: query
@@ -1726,7 +1739,7 @@ components:
       in: query
       description: Filter by address sending mosaics.
       schema:
-        $ref: '#/components/schemas/AddressBase32'
+        $ref: '#/components/schemas/Address'
     scopedMetadataKeyQuery:
       name: scopedMetadataKey
       in: query
@@ -1738,7 +1751,7 @@ components:
       in: query
       description: Filter by address sending the metadata entry.
       schema:
-        $ref: '#/components/schemas/AddressBase32'
+        $ref: '#/components/schemas/Address'
     registrationTypeQuery:
       name: registrationType
       in: query
@@ -1764,7 +1777,7 @@ components:
       in: query
       description: Filter by target address.
       schema:
-        $ref: '#/components/schemas/AddressBase32'
+        $ref: '#/components/schemas/Address'
     toHeightQuery:
       name: toHeight
       in: query
@@ -1849,13 +1862,8 @@ components:
   schemas:
     Address:
       type: string
-      format: hex
-      description: Address expressed in hexadecimal base.
-      example: 9081FCCB41F8C8409A9B99E485E0E28D23BD6304EF7215E0
-    AddressBase32:
-      type: string
       description: Address encoded using a 32-character set.
-      example: SAAA244WMCB2JXGNQTQHQOS45TGBFF4V2MJBVOQ
+      example: TADP6C2GVEG654OP5LZI32P2GYJSCMEGQBYB7QY
     Amount:
       type: string
       description: Absolute amount. An amount of 123456789 (absolute) for a mosaic with divisibility 6 means 123.456789 (relative).
@@ -2137,7 +2145,7 @@ components:
       example: 1
     Timestamp:
       type: string
-      description: Number of seconds elapsed since the creation of the nemesis block.
+      description: Number of milliseconds elapsed since the creation of the nemesis block. This value can be converted to epoch time by adding the network's 'epochAdjustment'.
       example: 108303181802
     UInt32:
       type: integer
@@ -2151,9 +2159,12 @@ components:
     UnresolvedAddress:
       type: string
       description: |
-        Address expressed in hexadecimal base. If the bit 0 of byte 0 is not set (like in 0x90), then it is a
-        regular address. Else (e.g. 0x91) it represents a namespace id which starts at byte 1.
-      example: 90340017CFF3DD2BCF3B2670CDCB9FC8C75754E2325F297C
+        Address expressed in Base32 format. If the bit 0 of byte 0 is not set (like in 0x90), then it is a
+        regular address. Example: TAOXUJOTTW3W5XTBQMQEX3SQNA6MCUVGXLXR3TA. 
+        Otherwise (e.g. 0x91) it represents a namespace id which starts at byte 1. Example: THBIMC3THGH5RUYAAAAAAAAAAAAAAAAAAAAAAAA
+      example: TAOXUJOTTW3W5XTBQMQEX3SQNA6MCUVGXLXR3TA
+      anyOf:
+        - $ref: '#/components/schemas/Address'
     UnresolvedMosaicId:
       type: string
       format: hex
@@ -2833,7 +2844,7 @@ components:
           description: Percentage of the harvested fee that is collected by the network.
           example: '5'
         harvestNetworkFeeSinkAddress:
-          $ref: '#/components/schemas/AddressBase32'
+          $ref: '#/components/schemas/Address'
           description: Address of the harvest network fee sink account.
           example: SDKDPA36TE53BO24FD4KA6OPGOUSEVOU3O5SIFI
         blockPruneInterval:
@@ -2935,6 +2946,25 @@ components:
           $ref: '#/components/schemas/Timestamp'
         receiveTimestamp:
           $ref: '#/components/schemas/Timestamp'
+    DeploymentDTO:
+      type: object
+      required:
+        - deploymentTool
+        - deploymentToolVersion
+        - lastUpdatedDate
+      properties:
+        deploymentTool:
+          type: string
+          example: symbol-bootstrap
+          description: 'The tool used to create, maintain and deploy the node. Examples: symbol-bootstrap, manual.'
+        deploymentToolVersion:
+          type: string
+          example: 1.0.6
+          description: 'The version of the tool used to create, maintain and deploy the node.'
+        lastUpdatedDate:
+          type: string
+          example: '2021-06-02'
+          description: When was the node last upgraded.
     NodeHealthDTO:
       type: object
       required:
@@ -3005,6 +3035,7 @@ components:
       required:
         - restVersion
         - sdkVersion
+        - deployment
       properties:
         restVersion:
           type: string
@@ -3014,6 +3045,8 @@ components:
           type: string
           example: 0.7.14
           description: catapult-sdk component version.
+        deployment:
+          $ref: '#/components/schemas/DeploymentDTO'
     ServerInfoDTO:
       type: object
       required:
@@ -3515,6 +3548,10 @@ components:
         index:
           type: integer
           description: Transaction index within the aggregate.
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
+        feeMultiplier:
+          $ref: '#/components/schemas/BlockFeeMultiplier'
     TransactionPage:
       type: object
       required:
@@ -3624,6 +3661,10 @@ components:
         index:
           type: integer
           description: Transaction index within the block.
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
+        feeMultiplier:
+          $ref: '#/components/schemas/BlockFeeMultiplier'
     TransactionStatusDTO:
       type: object
       required:
@@ -4357,7 +4398,7 @@ components:
           description: Maximum mosaic divisibility.
           example: '6'
         mosaicRentalFeeSinkAddress:
-          $ref: '#/components/schemas/AddressBase32'
+          $ref: '#/components/schemas/Address'
           description: Address of the mosaic rental fee sink account.
           example: SDKDPA36TE53BO24FD4KA6OPGOUSEVOU3O5SIFI
         mosaicRentalFee:
@@ -4762,7 +4803,7 @@ components:
           description: Reserved root namespaces that cannot be claimed.
           example: 'xem, nem, user, account, org, com, biz, net, edu, mil, gov, info'
         namespaceRentalFeeSinkAddress:
-          $ref: '#/components/schemas/AddressBase32'
+          $ref: '#/components/schemas/Address'
           description: Address of the namespace rental fee sink account.
           example: SDTZ23JBJZP3GTKKM2P6FYCMXS6RQYPB6R477TQ
         rootNamespaceRentalFeePerBlock:
@@ -4968,6 +5009,7 @@ components:
       type: object
       required:
         - id
+        - meta
         - statement
       description: |
         A resolution statement keeps the relation between a namespace alias used in a transaction
@@ -4976,6 +5018,8 @@ components:
         id:
           type: string
           description: Internal resource identifier.
+        meta:
+          $ref: '#/components/schemas/StatementMetaDTO'
         statement:
           $ref: '#/components/schemas/ResolutionStatementDTO'
     ResolutionStatementPage:
@@ -5008,6 +5052,14 @@ components:
             Transaction index within the aggregate transaction.
             If the transaction is not an embedded transaction, then the secondary id is set to 0.
           example: 0
+    StatementMetaDTO:
+      type: object
+      required:
+        - timestamp
+      description: 'Metadata related to the statment, including block information.'
+      properties:
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
     TransactionStatementDTO:
       type: object
       required:
@@ -5033,12 +5085,15 @@ components:
       type: object
       required:
         - id
+        - meta
         - statement
       description: Collection of receipts related to a transaction.
       properties:
         id:
           type: string
           description: Internal resource identifier.
+        meta:
+          $ref: '#/components/schemas/StatementMetaDTO'
         statement:
           $ref: '#/components/schemas/TransactionStatementDTO'
     TransactionStatementPage:
@@ -5493,7 +5548,7 @@ components:
           type: array
           description: Array of addresses.
           items:
-            $ref: '#/components/schemas/AddressBase32'
+            $ref: '#/components/schemas/Address'
     addresses:
       type: object
       properties:
@@ -5501,7 +5556,7 @@ components:
           type: array
           description: Array of addresses.
           items:
-            $ref: '#/components/schemas/AddressBase32'
+            $ref: '#/components/schemas/Address'
     cosignature:
       type: object
       properties:
@@ -5553,7 +5608,8 @@ components:
       properties:
         payload:
           type: string
-          description: Transaction payload.
+          description: Transaction payload in hexadecimal format.
+          example: 00112233445566778899AABBCCDDEEFF
   responses:
     ResourceNotFound:
       description: ResourceNotFound
