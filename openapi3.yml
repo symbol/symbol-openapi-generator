@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 1.0.2
+  version: 1.0.3
   title: Catapult REST Endpoints
   description: OpenAPI Specification of catapult-rest
   license:
@@ -1452,8 +1452,8 @@ paths:
         '409':
           $ref: '#/components/responses/InvalidArgument'
 externalDocs:
-  description: Symbol Developers
-  url: 'https://nemtech.github.io/'
+  description: Symbol Technical Documentation
+  url: 'https://docs.symbolplatform.com/'
 servers:
   - url: 'http://localhost:3000'
     description: Local development
@@ -2591,20 +2591,12 @@ components:
     NetworkTypeEnum:
       type: integer
       enum:
-        - 96
-        - 144
-        - 120
-        - 168
         - 104
         - 152
       description: |
         Network type:
-        * 0x60 (96 decimal) - Mijin network.
-        * 0x90 (144 decimal) - Mijin test network.
-        * 0x78 (120 decimal) - Private network.
-        * 0xA8 (168 decimal) - Private test network.
-        * 0x68 (104 decimal) - Public main network.
-        * 0x98 (152 decimal) - Public test network.
+        * 0x68 (104 decimal) - Main network.
+        * 0x98 (152 decimal) - Test network.
       example: 144
     EntityDTO:
       type: object
@@ -2732,11 +2724,11 @@ components:
         name:
           type: string
           description: Network name.
-          example: mijinTest
+          example: testnet
         description:
           type: string
           description: A short text describing the network.
-          example: catapult development network
+          example: catapult public test network
     ChainPropertiesDTO:
       type: object
       description: Chain related configuration properties.
@@ -2873,7 +2865,7 @@ components:
         identifier:
           type: string
           description: Network identifier.
-          example: mijin-test
+          example: testnet
         nodeEqualityStrategy:
           $ref: '#/components/schemas/NodeIdentityEqualityStrategy'
           example: host
@@ -3115,11 +3107,13 @@ components:
         - Failure_Core_Address_Collision
         - Failure_Core_Importance_Block_Mismatch
         - Failure_Core_Unexpected_Block_Type
+        - Failure_Core_Block_Explicit_Transactions_Hash_Mismatch
         - Failure_Core_Invalid_Link_Action
         - Failure_Core_Link_Already_Exists
         - Failure_Core_Inconsistent_Unlink_Data
         - Failure_Core_Invalid_Link_Range
         - Failure_Core_Too_Many_Links
+        - Failure_Core_Link_Start_Epoch_Invalid
         - Failure_Hash_Already_Exists
         - Failure_Signature_Not_Verifiable
         - Failure_AccountLink_Link_Already_Exists
@@ -3277,11 +3271,13 @@ components:
         * Failure_Core_Address_Collision - Validation failed because an address collision is detected.
         * Failure_Core_Importance_Block_Mismatch - Validation failed because the block does not match the schema of an importance block.
         * Failure_Core_Unexpected_Block_Type - Validation failed because the block type is unexpected.
+        * Failure_Core_Block_Explicit_Transactions_Hash_Mismatch - Validation failed because a block did not have the expected transactions hash at a specified height.
         * Failure_Core_Invalid_Link_Action - Validation failed because link action is invalid.
         * Failure_Core_Link_Already_Exists - Validation failed because main account is already linked to another account.
         * Failure_Core_Inconsistent_Unlink_Data - Validation failed because unlink data is not consistent with existing account link.
         * Failure_Core_Invalid_Link_Range - Validation failed because link range is invalid.
         * Failure_Core_Too_Many_Links - Validation failed because main account has too many links of the specified type.
+        * Failure_Core_Link_Start_Epoch_Invalid - Validation failed because the start epoch is invalid.
         * Failure_Hash_Already_Exists
         * Failure_Signature_Not_Verifiable - Validation failed because the verification of the signature failed.
         * Failure_AccountLink_Link_Already_Exists - Validation failed because main account is already linked to another account.
@@ -3429,6 +3425,7 @@ components:
         - 16961
         - 16717
         - 16973
+        - 17229
         - 16718
         - 16974
         - 17230
@@ -3455,6 +3452,7 @@ components:
         * 0x4241 (16961 decimal) - AggregateBondedTransaction.
         * 0x414D (16717 decimal) - MosaicDefinitionTransaction.
         * 0x424D (16973 decimal) - MosaicSupplyChangeTransaction.
+        * 0x434D (17229 decimal) - MosaicSupplyRevocationTransaction.
         * 0x414E (16718 decimal) - NamespaceRegistrationTransaction.
         * 0x424E (16974 decimal) - AddressAliasTransaction.
         * 0x434E (17230 decimal) - MosaicAliasTransaction.
@@ -3518,6 +3516,7 @@ components:
             - $ref: '#/components/schemas/EmbeddedNamespaceMetadataTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedMosaicDefinitionTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedMosaicSupplyChangeTransactionDTO'
+            - $ref: '#/components/schemas/EmbeddedMosaicSupplyRevocationTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedNamespaceRegistrationTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedAddressAliasTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedMosaicAliasTransactionDTO'
@@ -3622,6 +3621,8 @@ components:
             - $ref: '#/components/schemas/EmbeddedMosaicDefinitionTransactionDTO'
             - $ref: '#/components/schemas/MosaicSupplyChangeTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedMosaicSupplyChangeTransactionDTO'
+            - $ref: '#/components/schemas/MosaicSupplyRevocationTransactionDTO'
+            - $ref: '#/components/schemas/EmbeddedMosaicSupplyRevocationTransactionDTO'
             - $ref: '#/components/schemas/NamespaceRegistrationTransactionDTO'
             - $ref: '#/components/schemas/EmbeddedNamespaceRegistrationTransactionDTO'
             - $ref: '#/components/schemas/AddressAliasTransactionDTO'
@@ -4281,6 +4282,7 @@ components:
         - 0x01 (supplyMutable) - Mosaic supports supply changes even when mosaic owner owns partial supply.
         - 0x02 (transferable) - Mosaic supports transfers between arbitrary accounts. When not set, mosaic can only be transferred to and from mosaic owner.
         - 0x04 (restrictable) - Mosaic supports custom restrictions configured by mosaic owner.
+        - 0x08 (revokable) - Mosaic allows creator to revoke balances from another user.
     MosaicSupplyChangeActionEnum:
       type: integer
       enum:
@@ -4301,6 +4303,11 @@ components:
       allOf:
         - $ref: '#/components/schemas/EmbeddedTransactionDTO'
         - $ref: '#/components/schemas/MosaicSupplyChangeTransactionBodyDTO'
+    EmbeddedMosaicSupplyRevocationTransactionDTO:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/EmbeddedTransactionDTO'
+        - $ref: '#/components/schemas/MosaicSupplyRevocationTransactionBodyDTO'
     MosaicDefinitionTransactionBodyDTO:
       type: object
       required:
@@ -4435,6 +4442,25 @@ components:
       allOf:
         - $ref: '#/components/schemas/TransactionDTO'
         - $ref: '#/components/schemas/MosaicSupplyChangeTransactionBodyDTO'
+    MosaicSupplyRevocationTransactionBodyDTO:
+      type: object
+      required:
+        - sourceAddress
+        - mosaicId
+        - amount
+      properties:
+        sourceAddress:
+          $ref: '#/components/schemas/UnresolvedAddress'
+        mosaicId:
+          $ref: '#/components/schemas/UnresolvedMosaicId'
+        amount:
+          $ref: '#/components/schemas/Amount'
+    MosaicSupplyRevocationTransactionDTO:
+      type: object
+      description: Transaction that allows the mosaic creator to revoke some balance from a user.
+      allOf:
+        - $ref: '#/components/schemas/TransactionDTO'
+        - $ref: '#/components/schemas/MosaicSupplyRevocationTransactionBodyDTO'
     EmbeddedMultisigAccountModificationTransactionDTO:
       type: object
       allOf:
